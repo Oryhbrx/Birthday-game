@@ -256,7 +256,7 @@ const drivePhotoIDs = [
 
 function showPhoto(index) {
   const id = drivePhotoIDs[index - 1];
-  const photoPath = `https://drive.google.com/uc?export=view&id=${id}`;
+  const photoPath = `https://lh3.googleusercontent.com/d/${id}=s800`;
   slideshowImg.src = photoPath;
   slideshowImg.alt = `photo${index}`;
   slideshowImg.onerror = () => {
