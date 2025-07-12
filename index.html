@@ -31,10 +31,11 @@
     #reward {
       display: none;
       margin-top: 30px;
+      text-align: center;
     }
     #reward img {
-      width: 100px;
-      margin: 5px;
+      width: 300px;
+      border-radius: 10px;
     }
     #controls {
       margin-top: 20px;
@@ -46,6 +47,11 @@
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+    #slideshow a {
+      color: red;
+      font-weight: bold;
+      text-decoration: none;
     }
   </style>
 </head>
@@ -70,29 +76,36 @@
     <div></div>
   </div>
 
+  <!-- Reward section -->
   <div id="reward">
     <h2 style="color: red;">🎉 Happy Birthday! 🎉</h2>
-    <p style="color: red;">Here's your special photo album gift!</p>
-    <div id="photoAlbum"></div>
+    <p style="color: red;">Here's your special photo slideshow gift!</p>
+    <div id="slideshow">
+      <img id="slideshow-img" src="" alt="Photo" />
+      <br />
+      <a id="downloadBtn" href="#" download>📥 Download</a>
+      <div style="margin-top: 10px;">
+        <button class="ctrl-btn" onclick="prevPhoto()">⬅️ Prev</button>
+        <button class="ctrl-btn" onclick="nextPhoto()">Next ➡️</button>
+      </div>
+    </div>
   </div>
 
   <script>
     const canvas = document.getElementById('mazeCanvas');
     const ctx = canvas.getContext('2d');
     const reward = document.getElementById('reward');
-    const photoAlbum = document.getElementById('photoAlbum');
-
     const princess = new Image();
-    princess.src = 'princess.png'; // Ensure this image exists
+    princess.src = 'princess.png'; // make sure this image is present
+    const photoAlbum = document.getElementById('slideshow-img');
+    const downloadBtn = document.getElementById('downloadBtn');
 
     const levelSizes = [10, 12, 14, 16, 18];
     let currentLevel = 0;
     let mazeSize, maze, player;
     let imageLoaded = false;
 
-    princess.onload = () => {
-      imageLoaded = true;
-    };
+    princess.onload = () => { imageLoaded = true; };
 
     function startGame() {
       if (!imageLoaded) return alert("Princess is still loading...");
@@ -133,15 +146,12 @@
       function carve(x, y) {
         visited[y][x] = true;
         maze[y][x] = 0;
-
         const directions = shuffle([
           [0, -1], [0, 1], [-1, 0], [1, 0]
         ]);
-
         for (const [dx, dy] of directions) {
           const nx = x + dx * 2;
           const ny = y + dy * 2;
-
           if (nx >= 0 && ny >= 0 && nx < size && ny < size && !visited[ny][nx]) {
             maze[y + dy][x + dx] = 0;
             carve(nx, ny);
@@ -150,7 +160,6 @@
       }
 
       carve(0, 0);
-
       maze[size - 1][size - 1] = 0;
       if (
         (maze[size - 2]?.[size - 1] ?? 1) === 1 &&
@@ -169,16 +178,13 @@
     function drawMaze() {
       const tileSize = canvas.width / mazeSize;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       for (let y = 0; y < mazeSize; y++) {
         for (let x = 0; x < mazeSize; x++) {
           ctx.fillStyle = (x === mazeSize - 1 && y === mazeSize - 1)
-            ? 'yellow'
-            : (maze[y][x] === 1 ? 'red' : 'white');
+            ? 'yellow' : (maze[y][x] === 1 ? 'red' : 'white');
           ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
       }
-
       ctx.drawImage(princess, player.x * tileSize, player.y * tileSize, tileSize, tileSize);
     }
 
@@ -189,15 +195,12 @@
       if (direction === 'ArrowDown') dy = 1;
       if (direction === 'ArrowLeft') dx = -1;
       if (direction === 'ArrowRight') dx = 1;
-
       const nx = player.x + dx;
       const ny = player.y + dy;
-
       if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
         player.x = nx;
         player.y = ny;
         drawMaze();
-
         if (nx === mazeSize - 1 && ny === mazeSize - 1) {
           currentLevel++;
           if (currentLevel < levelSizes.length) {
@@ -209,18 +212,39 @@
       }
     }
 
+    document.addEventListener('keydown', e => move(e.key));
+
+    // Slideshow logic
+    let currentPhotoIndex = 1;
+    const totalPhotos = 100;
+
     function showReward() {
       reward.style.display = 'block';
-      photoAlbum.innerHTML = '';
-      for (let i = 1; i <= 4; i++) {
-        const img = document.createElement('img');
-        img.src = `photos/photo${i}.png`;
-        img.alt = `photo${i}`;
-        photoAlbum.appendChild(img);
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
       }
+      currentPhotoIndex = 1;
+      showPhoto(currentPhotoIndex);
     }
 
-    document.addEventListener('keydown', e => move(e.key));
+    function showPhoto(index) {
+      const photoPath = `photos/photo${index}.png`;
+      photoAlbum.src = photoPath;
+      photoAlbum.alt = `photo${index}`;
+      downloadBtn.href = photoPath;
+      downloadBtn.download = `photo${index}.png`;
+    }
+
+    function nextPhoto() {
+      currentPhotoIndex = (currentPhotoIndex % totalPhotos) + 1;
+      showPhoto(currentPhotoIndex);
+    }
+
+    function prevPhoto() {
+      currentPhotoIndex = (currentPhotoIndex - 2 + totalPhotos) % totalPhotos + 1;
+      showPhoto(currentPhotoIndex);
+    }
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   </script>
 </body>
