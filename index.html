@@ -77,7 +77,7 @@
           if ((x + y) % 2 === 0 || (x === 0 && y === 0)) grid[y][x] = 0;
         }
       }
-      grid[size - 1][size - 1] = 0; // goal
+      grid[size - 1][size - 1] = 0;
       return grid;
     }
 
@@ -94,11 +94,11 @@
       ctx.fillRect(player.x * tileSize, player.y * tileSize, tileSize, tileSize);
     }
     window.onload = () => {
-  document.body.focus(); // Ensure body gets key focus
+  document.body.focus();
 };
 
 document.addEventListener('keydown', e => {
-  console.log("Key pressed:", e.key); // ← Add this
+  if (!player) return;
 
   let dx = 0, dy = 0;
   if (e.key === 'ArrowUp') dy = -1;
@@ -112,6 +112,7 @@ document.addEventListener('keydown', e => {
     player.x = nx;
     player.y = ny;
     drawMaze();
+
     if (nx === mazeSize - 1 && ny === mazeSize - 1) {
       currentLevel++;
       if (currentLevel < levelSizes.length) {
@@ -134,7 +135,6 @@ document.addEventListener('keydown', e => {
       }
     }
 
-    // Clear initial canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   </script>
 </body>
