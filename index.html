@@ -118,7 +118,6 @@
 
   <audio id="bgMusic" src="reward.mp3" preload="auto"></audio>
 
-  <script>
 <script>
   const canvas = document.getElementById('mazeCanvas');
   const ctx = canvas.getContext('2d');
@@ -278,7 +277,8 @@
       slideshowImg.src = imgSrc;
       slideshowImg.style.display = 'block';
       downloadBtn.href = `${baseURL}download&id=${slide.id}`;
-    } else if (slide.type === 'video') {
+    } 
+    else if (slide.type === 'video') {
       slideshowVideo.src = `https://drive.google.com/uc?id=${slide.id}&export=download`;
       slideshowVideo.style.display = 'block';
       downloadBtn.href = `${baseURL}download&id=${slide.id}`;
