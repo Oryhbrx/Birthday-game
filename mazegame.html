@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maze Game - Princess Quest</title>
+  <style>
+    body {
+      background: #fff;
+      margin: 0;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    canvas {
+      border: 2px solid red;
+      image-rendering: pixelated;
+      margin-top: 20px;
+    }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      background: red;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    #reward {
+      display: none;
+      margin-top: 30px;
+    }
+    #reward img {
+      width: 100px;
+      margin: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1 style="color: red;">🎮 Princess Pixel Maze 🎂</h1>
+  <button onclick="startGame()">Start Game</button>
+  <canvas id="mazeCanvas" width="400" height="400"></canvas>
+  <div id="reward">
+    <h2 style="color: red;">🎉 Happy Birthday! 🎉</h2>
+    <p style="color: red;">Here's your special photo album gift!</p>
+    <div id="photoAlbum"></div>
+  </div>
+  <script>
+    const canvas = document.getElementById('mazeCanvas');
+    const ctx = canvas.getContext('2d');
+    const reward = document.getElementById('reward');
+    const photoAlbum = document.getElementById('photoAlbum');
+
+    const levelSizes = [10, 12, 14, 16, 18];
+    let currentLevel = 0;
+    let mazeSize, maze, player;
+
+    function startGame() {
+      currentLevel = 0;
+      loadLevel(currentLevel);
+    }
+
+    function loadLevel(index) {
+      mazeSize = levelSizes[index];
+      maze = generateMaze(mazeSize);
+      player = { x: 0, y: 0 };
+      drawMaze();
+      reward.style.display = 'none';
+    }
+
+    function generateMaze(size) {
+      const grid = Array(size).fill().map(() => Array(size).fill(1));
+      for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+          if ((x + y) % 2 === 0 || (x === 0 && y === 0)) grid[y][x] = 0;
+        }
+      }
+      grid[size - 1][size - 1] = 0; // goal
+      return grid;
+    }
+
+    function drawMaze() {
+      const tileSize = canvas.width / mazeSize;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let y = 0; y < mazeSize; y++) {
+        for (let x = 0; x < mazeSize; x++) {
+          ctx.fillStyle = maze[y][x] === 1 ? 'red' : 'white';
+          ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+        }
+      }
+      ctx.fillStyle = 'pink';
+      ctx.fillRect(player.x * tileSize, player.y * tileSize, tileSize, tileSize);
+    }
+
+    document.addEventListener('keydown', e => {
+      let dx = 0, dy = 0;
+      if (e.key === 'ArrowUp') dy = -1;
+      if (e.key === 'ArrowDown') dy = 1;
+      if (e.key === 'ArrowLeft') dx = -1;
+      if (e.key === 'ArrowRight') dx = 1;
+      const nx = player.x + dx;
+      const ny = player.y + dy;
+      if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
+        player.x = nx;
+        player.y = ny;
+        drawMaze();
+        if (nx === mazeSize - 1 && ny === mazeSize - 1) {
+          currentLevel++;
+          if (currentLevel < levelSizes.length) {
+            setTimeout(() => loadLevel(currentLevel), 500);
+          } else {
+            showReward();
+          }
+        }
+      }
+    });
+
+    function showReward() {
+      reward.style.display = 'block';
+      photoAlbum.innerHTML = '';
+      for (let i = 1; i <= 4; i++) {
+        const img = document.createElement('img');
+        img.src = `photos/photo${i}.png`;
+        img.alt = `photo${i}`;
+        photoAlbum.appendChild(img);
+      }
+    }
+  </script>
+</body>
+</html>
