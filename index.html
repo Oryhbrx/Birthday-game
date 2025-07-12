@@ -37,8 +37,8 @@
     }
   </style>
 </head>
-  <p>If you see this, the HTML file is loading correctly.</p>
 <body>
+  <p>If you see this, the HTML file is loading correctly.</p>
   <h1 style="color: red;">🎮 Princess Pixel Maze 🎂</h1>
   <button onclick="startGame()">Start Game</button>
   <canvas id="mazeCanvas" width="400" height="400"></canvas>
@@ -100,6 +100,7 @@
       if (e.key === 'ArrowDown') dy = 1;
       if (e.key === 'ArrowLeft') dx = -1;
       if (e.key === 'ArrowRight') dx = 1;
+
       const nx = player.x + dx;
       const ny = player.y + dy;
       if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
@@ -127,6 +128,9 @@
         photoAlbum.appendChild(img);
       }
     }
+
+    // Clear initial canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   </script>
 </body>
 </html>
