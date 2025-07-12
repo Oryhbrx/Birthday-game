@@ -119,155 +119,183 @@
   <audio id="bgMusic" src="reward.mp3" preload="auto"></audio>
 
   <script>
-    const canvas = document.getElementById('mazeCanvas');
-    const ctx = canvas.getContext('2d');
-    const princess = new Image();
-    princess.src = 'princess.png';
-    const bgMusic = document.getElementById('bgMusic');
-    const rewardOverlay = document.getElementById('rewardOverlay');
-    const slideshowImg = document.getElementById('slideshow-img');
-    const slideshowVideo = document.getElementById('slideshow-video');
-    const downloadBtn = document.getElementById('downloadBtn');
+<script>
+  const canvas = document.getElementById('mazeCanvas');
+  const ctx = canvas.getContext('2d');
 
-    // MIX of photos and video links from Google Drive (shared publicly)
-    const slides = [
-      { type: 'image', id: '108L_w_0bwfnYxL0XTHjvhK6-Q1lAGK8T' },
-      { type: 'image', id: '13B1hBmy7H6mpBezrH8Iy2VEJIAjA2tVQ' },
-      { type: 'video', id: '1VD23FLMyv-EXAMPLE-VIDEO-DRIVE-ID' },
-      { type: 'image', id: '1qfk-HXNCkom5se9a321sTcWd1lL3u0wq' },
-    ];
+  const princessSprite = new Image();
+  princessSprite.src = 'princess-walk.png'; // make sure this has 4 horizontal frames
+  const frameCount = 4;
+  let frameIndex = 0;
+  let frameTick = 0;
 
-    let currentLevel = 0;
-    let mazeSize, maze, player;
-    let imageLoaded = false;
-    let currentSlideIndex = 0;
+  const bgMusic = document.getElementById('bgMusic');
+  const rewardOverlay = document.getElementById('rewardOverlay');
+  const slideshowImg = document.getElementById('slideshow-img');
+  const slideshowVideo = document.getElementById('slideshow-video');
+  const downloadBtn = document.getElementById('downloadBtn');
 
-    princess.onload = () => imageLoaded = true;
+  const slides = [
+    { type: 'image', id: '108L_w_0bwfnYxL0XTHjvhK6-Q1lAGK8T' },
+    { type: 'image', id: '13B1hBmy7H6mpBezrH8Iy2VEJIAjA2tVQ' },
+    { type: 'video', id: '1VD23FLMyv-EXAMPLE-VIDEO-DRIVE-ID' },
+    { type: 'image', id: '1qfk-HXNCkom5se9a321sTcWd1lL3u0wq' },
+  ];
 
-    function startGame() {
-      if (!imageLoaded) return alert("Princess is still loading...");
-      currentLevel = 0;
+  let currentLevel = 0;
+  let mazeSize, maze, player;
+  let imageLoaded = false;
+  let currentSlideIndex = 0;
+
+  princessSprite.onload = () => imageLoaded = true;
+
+  function drawPrincess(x, y, tileSize) {
+    const frameWidth = princessSprite.width / frameCount;
+    const frameHeight = princessSprite.height;
+    ctx.drawImage(
+      princessSprite,
+      frameIndex * frameWidth, 0, frameWidth, frameHeight,
+      x * tileSize, y * tileSize, tileSize, tileSize
+    );
+  }
+
+  function drawMaze() {
+    const tileSize = canvas.width / mazeSize;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let y = 0; y < mazeSize; y++) {
+      for (let x = 0; x < mazeSize; x++) {
+        ctx.fillStyle = (x === mazeSize - 1 && y === mazeSize - 1) ? 'yellow' : (maze[y][x] === 1 ? 'red' : 'white');
+        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+      }
+    }
+    drawPrincess(player.x, player.y, tileSize);
+  }
+
+  function startGame() {
+    if (!imageLoaded) return alert("Princess is still loading...");
+    currentLevel = 0;
+    loadLevel(currentLevel);
+    rewardOverlay.style.display = 'none';
+    if (!bgMusic.paused) bgMusic.pause();
+  }
+
+  function loadLevel(index) {
+    mazeSize = [10, 12, 14, 16, 18][index];
+    maze = generateMaze(mazeSize);
+    player = { x: 0, y: 0 };
+    drawMaze();
+    document.getElementById('levelDisplay').innerText = `Level: ${index + 1}`;
+  }
+
+  function nextLevel() {
+    if (currentLevel < 4) {
+      currentLevel++;
       loadLevel(currentLevel);
-      rewardOverlay.style.display = 'none';
-      if (!bgMusic.paused) bgMusic.pause();
+    } else {
+      showReward();
     }
+  }
 
-    function loadLevel(index) {
-      mazeSize = [10, 12, 14, 16, 18][index];
-      maze = generateMaze(mazeSize);
-      player = { x: 0, y: 0 };
+  function move(direction) {
+    if (!player || !imageLoaded) return;
+
+    let dx = 0, dy = 0;
+    if (direction === 'ArrowUp') dy = -1;
+    if (direction === 'ArrowDown') dy = 1;
+    if (direction === 'ArrowLeft') dx = -1;
+    if (direction === 'ArrowRight') dx = 1;
+
+    const nx = player.x + dx;
+    const ny = player.y + dy;
+
+    if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
+      player.x = nx;
+      player.y = ny;
+
+      // Animate princess walking
+      frameTick++;
+      if (frameTick % 6 === 0) {
+        frameIndex = (frameIndex + 1) % frameCount;
+      }
+
       drawMaze();
-      document.getElementById('levelDisplay').innerText = `Level: ${index + 1}`;
-    }
 
-    function nextLevel() {
-      if (currentLevel < 4) {
+      if (nx === mazeSize - 1 && ny === mazeSize - 1) {
         currentLevel++;
-        loadLevel(currentLevel);
-      } else {
-        showReward();
+        currentLevel < 5 ? setTimeout(() => loadLevel(currentLevel), 500) : showReward();
       }
     }
+  }
 
-    function generateMaze(size) {
-      const maze = Array(size).fill().map(() => Array(size).fill(1));
-      const visited = Array(size).fill().map(() => Array(size).fill(false));
-      function shuffle(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
+  function generateMaze(size) {
+    const maze = Array(size).fill().map(() => Array(size).fill(1));
+    const visited = Array(size).fill().map(() => Array(size).fill(false));
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
       }
-      function carve(x, y) {
-        visited[y][x] = true;
-        maze[y][x] = 0;
-        const directions = shuffle([[0, -1], [0, 1], [-1, 0], [1, 0]]);
-        for (const [dx, dy] of directions) {
-          const nx = x + dx * 2, ny = y + dy * 2;
-          if (nx >= 0 && ny >= 0 && nx < size && ny < size && !visited[ny][nx]) {
-            maze[y + dy][x + dx] = 0;
-            carve(nx, ny);
-          }
-        }
-      }
-      carve(0, 0);
-      maze[size - 1][size - 1] = 0;
-      if ((maze[size - 2]?.[size - 1] ?? 1) === 1 && (maze[size - 1]?.[size - 2] ?? 1) === 1) {
-        size > 2 ? maze[size - 2][size - 1] = 0 : maze[size - 1][size - 2] = 0;
-      }
-      return maze;
+      return arr;
     }
-
-    function drawMaze() {
-      const tileSize = canvas.width / mazeSize;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      for (let y = 0; y < mazeSize; y++) {
-        for (let x = 0; x < mazeSize; x++) {
-          ctx.fillStyle = (x === mazeSize - 1 && y === mazeSize - 1) ? 'yellow' : (maze[y][x] === 1 ? 'red' : 'white');
-          ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-        }
-      }
-      ctx.drawImage(princess, player.x * tileSize, player.y * tileSize, tileSize, tileSize);
-    }
-
-    function move(direction) {
-      if (!player || !imageLoaded) return;
-      let dx = 0, dy = 0;
-      if (direction === 'ArrowUp') dy = -1;
-      if (direction === 'ArrowDown') dy = 1;
-      if (direction === 'ArrowLeft') dx = -1;
-      if (direction === 'ArrowRight') dx = 1;
-      const nx = player.x + dx, ny = player.y + dy;
-      if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
-        player.x = nx; player.y = ny; drawMaze();
-        if (nx === mazeSize - 1 && ny === mazeSize - 1) {
-          currentLevel++;
-          currentLevel < 5 ? setTimeout(() => loadLevel(currentLevel), 500) : showReward();
+    function carve(x, y) {
+      visited[y][x] = true;
+      maze[y][x] = 0;
+      const directions = shuffle([[0, -1], [0, 1], [-1, 0], [1, 0]]);
+      for (const [dx, dy] of directions) {
+        const nx = x + dx * 2, ny = y + dy * 2;
+        if (nx >= 0 && ny >= 0 && nx < size && ny < size && !visited[ny][nx]) {
+          maze[y + dy][x + dx] = 0;
+          carve(nx, ny);
         }
       }
     }
-
-    function showReward() {
-      rewardOverlay.style.display = 'flex';
-      if (document.documentElement.requestFullscreen) {
-        document.documentElement.requestFullscreen();
-      }
-      bgMusic.play();
-      currentSlideIndex = 0;
-      showSlide(currentSlideIndex);
+    carve(0, 0);
+    maze[size - 1][size - 1] = 0;
+    if ((maze[size - 2]?.[size - 1] ?? 1) === 1 && (maze[size - 1]?.[size - 2] ?? 1) === 1) {
+      size > 2 ? maze[size - 2][size - 1] = 0 : maze[size - 1][size - 2] = 0;
     }
+    return maze;
+  }
 
-    function showSlide(index) {
-      const slide = slides[index];
-      const baseURL = 'https://drive.google.com/uc?export=';
-      slideshowImg.style.display = 'none';
-      slideshowVideo.style.display = 'none';
-
-      if (slide.type === 'image') {
-        const imgSrc = `https://lh3.googleusercontent.com/d/${slide.id}=s800`;
-        slideshowImg.src = imgSrc;
-        slideshowImg.style.display = 'block';
-        downloadBtn.href = `${baseURL}download&id=${slide.id}`;
-      } else if (slide.type === 'video') {
-        const vidSrc = `${baseURL}view&id=${slide.id}`;
-        slideshowVideo.src = `https://drive.google.com/uc?id=${slide.id}&export=download`;
-        slideshowVideo.style.display = 'block';
-        downloadBtn.href = `${baseURL}download&id=${slide.id}`;
-      }
+  function showReward() {
+    rewardOverlay.style.display = 'flex';
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
     }
+    bgMusic.play();
+    currentSlideIndex = 0;
+    showSlide(currentSlideIndex);
+  }
 
-    function nextSlide() {
-      currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-      showSlide(currentSlideIndex);
+  function showSlide(index) {
+    const slide = slides[index];
+    const baseURL = 'https://drive.google.com/uc?export=';
+    slideshowImg.style.display = 'none';
+    slideshowVideo.style.display = 'none';
+
+    if (slide.type === 'image') {
+      const imgSrc = `https://lh3.googleusercontent.com/d/${slide.id}=s800`;
+      slideshowImg.src = imgSrc;
+      slideshowImg.style.display = 'block';
+      downloadBtn.href = `${baseURL}download&id=${slide.id}`;
+    } else if (slide.type === 'video') {
+      slideshowVideo.src = `https://drive.google.com/uc?id=${slide.id}&export=download`;
+      slideshowVideo.style.display = 'block';
+      downloadBtn.href = `${baseURL}download&id=${slide.id}`;
     }
+  }
 
-    function prevSlide() {
-      currentSlideIndex = (currentSlideIndex - 1 + slides.length) % slides.length;
-      showSlide(currentSlideIndex);
-    }
+  function nextSlide() {
+    currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+    showSlide(currentSlideIndex);
+  }
 
-    document.addEventListener('keydown', e => move(e.key));
-  </script>
+  function prevSlide() {
+    currentSlideIndex = (currentSlideIndex - 1 + slides.length) % slides.length;
+    showSlide(currentSlideIndex);
+  }
+
+  document.addEventListener('keydown', e => move(e.key));
+</script>
 </body>
 </html>
