@@ -169,7 +169,20 @@
     }
     drawPrincess(player.x, player.y, tileSize);
   }
+if (currentLevel === 4) {
+  const friendsSprite = new Image();
+  friendsSprite.src = 'friends.png'; // your image with Prince Kaboom, Fairy Trill, Meowdy the Cat
 
+  friendsSprite.onload = () => {
+    ctx.drawImage(
+      friendsSprite,
+      (mazeSize - 1) * tileSize - 10,
+      (mazeSize - 1) * tileSize - 30,
+      tileSize * 1.8,
+      tileSize * 1.5
+    );
+  };
+}
   function startGame() {
     if (!imageLoaded) return alert("Princess is still loading...");
     currentLevel = 0;
