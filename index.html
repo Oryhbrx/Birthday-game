@@ -106,15 +106,44 @@
     }
 
     function generateMaze(size) {
-      const grid = Array(size).fill().map(() => Array(size).fill(1));
-      for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-          if ((x + y) % 2 === 0 || (x === 0 && y === 0)) grid[y][x] = 0;
-        }
-      }
-      grid[size - 1][size - 1] = 0;
-      return grid;
+  const maze = Array(size).fill().map(() => Array(size).fill(1));
+  const visited = Array(size).fill().map(() => Array(size).fill(false));
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
     }
+    return arr;
+  }
+
+  function carve(x, y) {
+    visited[y][x] = true;
+    maze[y][x] = 0;
+
+    const directions = shuffle([
+      [0, -1], // up
+      [0, 1],  // down
+      [-1, 0], // left
+      [1, 0]   // right
+    ]);
+
+    for (const [dx, dy] of directions) {
+      const nx = x + dx * 2;
+      const ny = y + dy * 2;
+
+      if (nx >= 0 && ny >= 0 && nx < size && ny < size && !visited[ny][nx]) {
+        maze[y + dy][x + dx] = 0; // carve wall between
+        carve(nx, ny);
+      }
+    }
+  }
+
+  // Start from top-left
+  carve(0, 0);
+  maze[size - 1][size - 1] = 0; // Ensure goal is reachable
+  return maze;
+}
 
     function drawMaze() {
       const tileSize = canvas.width / mazeSize;
