@@ -94,29 +94,31 @@
       ctx.fillRect(player.x * tileSize, player.y * tileSize, tileSize, tileSize);
     }
 
-    document.addEventListener('keydown', e => {
-      let dx = 0, dy = 0;
-      if (e.key === 'ArrowUp') dy = -1;
-      if (e.key === 'ArrowDown') dy = 1;
-      if (e.key === 'ArrowLeft') dx = -1;
-      if (e.key === 'ArrowRight') dx = 1;
+document.addEventListener('keydown', e => {
+  console.log("Key pressed:", e.key); // ← Add this
 
-      const nx = player.x + dx;
-      const ny = player.y + dy;
-      if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
-        player.x = nx;
-        player.y = ny;
-        drawMaze();
-        if (nx === mazeSize - 1 && ny === mazeSize - 1) {
-          currentLevel++;
-          if (currentLevel < levelSizes.length) {
-            setTimeout(() => loadLevel(currentLevel), 500);
-          } else {
-            showReward();
-          }
-        }
+  let dx = 0, dy = 0;
+  if (e.key === 'ArrowUp') dy = -1;
+  if (e.key === 'ArrowDown') dy = 1;
+  if (e.key === 'ArrowLeft') dx = -1;
+  if (e.key === 'ArrowRight') dx = 1;
+
+  const nx = player.x + dx;
+  const ny = player.y + dy;
+  if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
+    player.x = nx;
+    player.y = ny;
+    drawMaze();
+    if (nx === mazeSize - 1 && ny === mazeSize - 1) {
+      currentLevel++;
+      if (currentLevel < levelSizes.length) {
+        setTimeout(() => loadLevel(currentLevel), 500);
+      } else {
+        showReward();
       }
-    });
+    }
+  }
+});
 
     function showReward() {
       reward.style.display = 'block';
