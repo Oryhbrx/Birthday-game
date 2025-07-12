@@ -15,8 +15,8 @@
     }
     canvas {
       border: 2px solid red;
-      image-rendering: pixelated;
       margin-top: 20px;
+      /* Removed image-rendering here to keep maze smooth */
     }
     button {
       margin: 10px;
@@ -84,45 +84,53 @@
     function drawMaze() {
       const tileSize = canvas.width / mazeSize;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw maze background
       for (let y = 0; y < mazeSize; y++) {
         for (let x = 0; x < mazeSize; x++) {
           ctx.fillStyle = maze[y][x] === 1 ? 'red' : 'white';
           ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
       }
+
+      // Draw pixel-style princess
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
       ctx.fillStyle = 'pink';
       ctx.fillRect(player.x * tileSize, player.y * tileSize, tileSize, tileSize);
+      ctx.restore();
     }
+
     window.onload = () => {
-  document.body.focus();
-};
+      document.body.focus();
+    };
 
-document.addEventListener('keydown', e => {
-  if (!player) return;
+    document.addEventListener('keydown', e => {
+      if (!player) return;
 
-  let dx = 0, dy = 0;
-  if (e.key === 'ArrowUp') dy = -1;
-  if (e.key === 'ArrowDown') dy = 1;
-  if (e.key === 'ArrowLeft') dx = -1;
-  if (e.key === 'ArrowRight') dx = 1;
+      let dx = 0, dy = 0;
+      if (e.key === 'ArrowUp') dy = -1;
+      if (e.key === 'ArrowDown') dy = 1;
+      if (e.key === 'ArrowLeft') dx = -1;
+      if (e.key === 'ArrowRight') dx = 1;
 
-  const nx = player.x + dx;
-  const ny = player.y + dy;
-  if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
-    player.x = nx;
-    player.y = ny;
-    drawMaze();
+      const nx = player.x + dx;
+      const ny = player.y + dy;
+      if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
+        player.x = nx;
+        player.y = ny;
+        drawMaze();
 
-    if (nx === mazeSize - 1 && ny === mazeSize - 1) {
-      currentLevel++;
-      if (currentLevel < levelSizes.length) {
-        setTimeout(() => loadLevel(currentLevel), 500);
-      } else {
-        showReward();
+        if (nx === mazeSize - 1 && ny === mazeSize - 1) {
+          currentLevel++;
+          if (currentLevel < levelSizes.length) {
+            setTimeout(() => loadLevel(currentLevel), 500);
+          } else {
+            showReward();
+          }
+        }
       }
-    }
-  }
-});
+    });
 
     function showReward() {
       reward.style.display = 'block';
