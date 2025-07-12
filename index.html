@@ -117,7 +117,16 @@
     const slideshowImg = document.getElementById('slideshow-img');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    const drivePhotoIDs = Array.from({ length: 33 }, (_, i) => `photo${i + 1}`);
+const drivePhotoIDs = [
+  '1DMfR8LrjZSWom9nu8xxSBXdLLNZKTLJq',
+  '1XefON8OkP9p9auBpFUQFBkMi9iR0iJHg',
+  '1hlJbO53cVF80NqORpfkAElvsxHUBxunJ',
+  '15NI5eERiLjsQJYiFw7SF5zwgNCcx7xT8',
+  '1W2KVLNVwRw5uHKNbHlxTR_CQLOhJYwT0',
+  '1e74jH1uhnuXy3nA5jRqzPN1XQPcKUDrt',
+  '1fdOXU3pzncIbTz-7FncUFRM6Ur08RVgl',
+  '1Equ54PEKlZfaGxsgntP7kSgXAotZPTdS'
+];
     const totalPhotos = drivePhotoIDs.length;
     let currentLevel = 0;
     let mazeSize, maze, player;
@@ -220,13 +229,13 @@
       showPhoto(currentPhotoIndex);
     }
 
-    function showPhoto(index) {
-      const photoPath = `https://drive.google.com/uc?export=view&id=${drivePhotoIDs[index - 1]}`;
-      slideshowImg.src = photoPath;
-      slideshowImg.alt = `photo${index}`;
-      downloadBtn.href = photoPath;
-    }
-
+function showPhoto(index) {
+  const photoPath = `https://drive.google.com/uc?export=view&id=${drivePhotoIDs[index - 1]}`;
+  console.log(`Showing Photo ${index}: ${photoPath}`); // Optional for debugging
+  slideshowImg.src = photoPath;
+  slideshowImg.alt = `photo${index}`;
+  downloadBtn.href = photoPath;
+}
     function nextPhoto() {
       currentPhotoIndex = (currentPhotoIndex % totalPhotos) + 1;
       showPhoto(currentPhotoIndex);
