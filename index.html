@@ -60,10 +60,10 @@
   <button onclick="startGame()">Start Game</button>
   <button onclick="nextLevel()">Next Level</button>
   <button onclick="loadLevel(currentLevel)">Restart Level</button>
+  <button onclick="startGame()">🔁 Replay</button>
   <h2 id="levelDisplay" style="color: red;">Level: 1</h2>
   <canvas id="mazeCanvas" width="400" height="400"></canvas>
 
-  <!-- On-screen control buttons -->
   <div id="controls">
     <div></div>
     <div><button class="ctrl-btn" onclick="move('ArrowUp')">⬆️</button></div>
@@ -89,16 +89,22 @@
         <button class="ctrl-btn" onclick="nextPhoto()">Next ➡️</button>
       </div>
     </div>
+    <br />
+    <button onclick="startGame()">🔁 Replay Game</button>
   </div>
+
+  <!-- Background music -->
+  <audio id="bgMusic" src="reward.mp3" preload="auto"></audio>
 
   <script>
     const canvas = document.getElementById('mazeCanvas');
     const ctx = canvas.getContext('2d');
     const reward = document.getElementById('reward');
     const princess = new Image();
-    princess.src = 'princess.png'; // make sure this image is present
+    princess.src = 'princess.png';
     const photoAlbum = document.getElementById('slideshow-img');
     const downloadBtn = document.getElementById('downloadBtn');
+    const bgMusic = document.getElementById('bgMusic');
 
     const levelSizes = [10, 12, 14, 16, 18];
     let currentLevel = 0;
@@ -111,6 +117,8 @@
       if (!imageLoaded) return alert("Princess is still loading...");
       currentLevel = 0;
       loadLevel(currentLevel);
+      if (!bgMusic.paused) bgMusic.pause(); // stop music if playing
+      reward.style.display = 'none';
     }
 
     function loadLevel(index) {
@@ -118,7 +126,6 @@
       maze = generateMaze(mazeSize);
       player = { x: 0, y: 0 };
       drawMaze();
-      reward.style.display = 'none';
       document.getElementById('levelDisplay').innerText = `Level: ${index + 1}`;
     }
 
@@ -146,9 +153,7 @@
       function carve(x, y) {
         visited[y][x] = true;
         maze[y][x] = 0;
-        const directions = shuffle([
-          [0, -1], [0, 1], [-1, 0], [1, 0]
-        ]);
+        const directions = shuffle([[0, -1], [0, 1], [-1, 0], [1, 0]]);
         for (const [dx, dy] of directions) {
           const nx = x + dx * 2;
           const ny = y + dy * 2;
@@ -161,10 +166,8 @@
 
       carve(0, 0);
       maze[size - 1][size - 1] = 0;
-      if (
-        (maze[size - 2]?.[size - 1] ?? 1) === 1 &&
-        (maze[size - 1]?.[size - 2] ?? 1) === 1
-      ) {
+      if ((maze[size - 2]?.[size - 1] ?? 1) === 1 &&
+          (maze[size - 1]?.[size - 2] ?? 1) === 1) {
         if (size > 2) {
           maze[size - 2][size - 1] = 0;
         } else {
@@ -214,17 +217,29 @@
 
     document.addEventListener('keydown', e => move(e.key));
 
-    // Slideshow logic
     let currentPhotoIndex = 1;
     const totalPhotos = 100;
+    let slideshowInterval;
 
     function showReward() {
       reward.style.display = 'block';
+
+      // Fullscreen
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen();
       }
+
+      // Play background music
+      bgMusic.play();
+
+      // Start slideshow
       currentPhotoIndex = 1;
       showPhoto(currentPhotoIndex);
+      clearInterval(slideshowInterval);
+      slideshowInterval = setInterval(() => {
+        currentPhotoIndex = (currentPhotoIndex % totalPhotos) + 1;
+        showPhoto(currentPhotoIndex);
+      }, 3000);
     }
 
     function showPhoto(index) {
