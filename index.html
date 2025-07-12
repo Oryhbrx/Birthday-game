@@ -117,13 +117,12 @@
     const slideshowImg = document.getElementById('slideshow-img');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    const levelSizes = [10, 12, 14, 16, 18];
+    const drivePhotoIDs = Array.from({ length: 33 }, (_, i) => `photo${i + 1}`);
+    const totalPhotos = drivePhotoIDs.length;
     let currentLevel = 0;
     let mazeSize, maze, player;
     let imageLoaded = false;
     let currentPhotoIndex = 1;
-    const totalPhotos = 100;
-    let slideshowInterval;
 
     princess.onload = () => imageLoaded = true;
 
@@ -132,12 +131,11 @@
       currentLevel = 0;
       loadLevel(currentLevel);
       rewardOverlay.style.display = 'none';
-      clearInterval(slideshowInterval);
       if (!bgMusic.paused) bgMusic.pause();
     }
 
     function loadLevel(index) {
-      mazeSize = levelSizes[index];
+      mazeSize = [10, 12, 14, 16, 18][index];
       maze = generateMaze(mazeSize);
       player = { x: 0, y: 0 };
       drawMaze();
@@ -145,7 +143,7 @@
     }
 
     function nextLevel() {
-      if (currentLevel < levelSizes.length - 1) {
+      if (currentLevel < 4) {
         currentLevel++;
         loadLevel(currentLevel);
       } else {
@@ -156,7 +154,6 @@
     function generateMaze(size) {
       const maze = Array(size).fill().map(() => Array(size).fill(1));
       const visited = Array(size).fill().map(() => Array(size).fill(false));
-
       function shuffle(arr) {
         for (let i = arr.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -164,32 +161,23 @@
         }
         return arr;
       }
-
       function carve(x, y) {
         visited[y][x] = true;
         maze[y][x] = 0;
         const directions = shuffle([[0, -1], [0, 1], [-1, 0], [1, 0]]);
         for (const [dx, dy] of directions) {
-          const nx = x + dx * 2;
-          const ny = y + dy * 2;
+          const nx = x + dx * 2, ny = y + dy * 2;
           if (nx >= 0 && ny >= 0 && nx < size && ny < size && !visited[ny][nx]) {
             maze[y + dy][x + dx] = 0;
             carve(nx, ny);
           }
         }
       }
-
       carve(0, 0);
       maze[size - 1][size - 1] = 0;
-      if ((maze[size - 2]?.[size - 1] ?? 1) === 1 &&
-          (maze[size - 1]?.[size - 2] ?? 1) === 1) {
-        if (size > 2) {
-          maze[size - 2][size - 1] = 0;
-        } else {
-          maze[size - 1][size - 2] = 0;
-        }
+      if ((maze[size - 2]?.[size - 1] ?? 1) === 1 && (maze[size - 1]?.[size - 2] ?? 1) === 1) {
+        size > 2 ? maze[size - 2][size - 1] = 0 : maze[size - 1][size - 2] = 0;
       }
-
       return maze;
     }
 
@@ -198,8 +186,7 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let y = 0; y < mazeSize; y++) {
         for (let x = 0; x < mazeSize; x++) {
-          ctx.fillStyle = (x === mazeSize - 1 && y === mazeSize - 1)
-            ? 'yellow' : (maze[y][x] === 1 ? 'red' : 'white');
+          ctx.fillStyle = (x === mazeSize - 1 && y === mazeSize - 1) ? 'yellow' : (maze[y][x] === 1 ? 'red' : 'white');
           ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
       }
@@ -213,24 +200,15 @@
       if (direction === 'ArrowDown') dy = 1;
       if (direction === 'ArrowLeft') dx = -1;
       if (direction === 'ArrowRight') dx = 1;
-      const nx = player.x + dx;
-      const ny = player.y + dy;
+      const nx = player.x + dx, ny = player.y + dy;
       if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
-        player.x = nx;
-        player.y = ny;
-        drawMaze();
+        player.x = nx; player.y = ny; drawMaze();
         if (nx === mazeSize - 1 && ny === mazeSize - 1) {
           currentLevel++;
-          if (currentLevel < levelSizes.length) {
-            setTimeout(() => loadLevel(currentLevel), 500);
-          } else {
-            showReward();
-          }
+          currentLevel < 5 ? setTimeout(() => loadLevel(currentLevel), 500) : showReward();
         }
       }
     }
-
-    document.addEventListener('keydown', e => move(e.key));
 
     function showReward() {
       rewardOverlay.style.display = 'flex';
@@ -240,15 +218,10 @@
       bgMusic.play();
       currentPhotoIndex = 1;
       showPhoto(currentPhotoIndex);
-      clearInterval(slideshowInterval);
-      slideshowInterval = setInterval(() => {
-        currentPhotoIndex = (currentPhotoIndex % totalPhotos) + 1;
-        showPhoto(currentPhotoIndex);
-      }, 3000);
     }
 
     function showPhoto(index) {
-      const photoPath = `photos/photo${index}.png`;
+      const photoPath = `https://drive.google.com/uc?export=view&id=${drivePhotoIDs[index - 1]}`;
       slideshowImg.src = photoPath;
       slideshowImg.alt = `photo${index}`;
       downloadBtn.href = photoPath;
@@ -263,6 +236,9 @@
       currentPhotoIndex = (currentPhotoIndex - 2 + totalPhotos) % totalPhotos + 1;
       showPhoto(currentPhotoIndex);
     }
+
+    document.addEventListener('keydown', e => move(e.key));
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
   </script>
 </body>
 </html>
