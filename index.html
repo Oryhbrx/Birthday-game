@@ -254,15 +254,16 @@ const drivePhotoIDs = [
       showPhoto(currentPhotoIndex);
     }
 
-    function showPhoto(index) {
-      const photoPath = `https://drive.google.com/uc?export=download&id=${drivePhotoIDs[index - 1]}`;
-      slideshowImg.src = photoPath;
-      slideshowImg.alt = `photo${index}`;
-      slideshowImg.onerror = () => {
-        alert(`Failed to load image ${index}. Check if it's shared publicly on Google Drive.`);
-      };
-      downloadBtn.href = photoPath;
-    }
+function showPhoto(index) {
+  const id = drivePhotoIDs[index - 1];
+  const photoPath = `https://drive.google.com/uc?export=view&id=${id}`;
+  slideshowImg.src = photoPath;
+  slideshowImg.alt = `photo${index}`;
+  slideshowImg.onerror = () => {
+    alert(`Failed to load image ${index}. Check if it's shared publicly on Google Drive.`);
+  };
+  downloadBtn.href = `https://drive.google.com/uc?export=download&id=${id}`;
+}
 
     function nextPhoto() {
       currentPhotoIndex = (currentPhotoIndex % totalPhotos) + 1;
