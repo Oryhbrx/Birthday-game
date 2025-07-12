@@ -6,9 +6,9 @@
   <title>Maze Game - Princess Quest</title>
   <style>
     body {
-      background: #fff;
       margin: 0;
       font-family: sans-serif;
+      background: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -28,15 +28,6 @@
       cursor: pointer;
       border-radius: 8px;
     }
-    #reward {
-      display: none;
-      margin-top: 30px;
-      text-align: center;
-    }
-    #reward img {
-      width: 300px;
-      border-radius: 10px;
-    }
     #controls {
       margin-top: 20px;
       display: grid;
@@ -48,10 +39,36 @@
       justify-content: center;
       align-items: center;
     }
-    #slideshow a {
+    #rewardOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 255, 255, 0.98);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+    #slideshow-img {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 10px;
+      box-shadow: 0 0 20px red;
+    }
+    #slideshow-controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    #slideshow-controls a {
+      text-decoration: none;
       color: red;
       font-weight: bold;
-      text-decoration: none;
     }
   </style>
 </head>
@@ -76,49 +93,47 @@
     <div></div>
   </div>
 
-  <!-- Reward section -->
-  <div id="reward">
+  <div id="rewardOverlay">
     <h2 style="color: red;">🎉 Happy Birthday! 🎉</h2>
-    <p style="color: red;">Here's your special photo slideshow gift!</p>
-    <div id="slideshow">
-      <img id="slideshow-img" src="" alt="Photo" />
-      <br />
-      <a id="downloadBtn" href="#" download>📥 Download</a>
-      <div style="margin-top: 10px;">
-        <button class="ctrl-btn" onclick="prevPhoto()">⬅️ Prev</button>
-        <button class="ctrl-btn" onclick="nextPhoto()">Next ➡️</button>
-      </div>
+    <p style="color: red;">Here’s your special photo slideshow gift!</p>
+    <img id="slideshow-img" src="" alt="Photo" />
+    <div id="slideshow-controls">
+      <button class="ctrl-btn" onclick="prevPhoto()">⬅️ Prev</button>
+      <button class="ctrl-btn" onclick="nextPhoto()">Next ➡️</button>
+      <a id="downloadBtn" href="#" download><button class="ctrl-btn">📥 Download</button></a>
+      <button class="ctrl-btn" onclick="startGame()">🔁 Replay Game</button>
     </div>
-    <br />
-    <button onclick="startGame()">🔁 Replay Game</button>
   </div>
 
-  <!-- Background music -->
   <audio id="bgMusic" src="reward.mp3" preload="auto"></audio>
 
   <script>
     const canvas = document.getElementById('mazeCanvas');
     const ctx = canvas.getContext('2d');
-    const reward = document.getElementById('reward');
     const princess = new Image();
     princess.src = 'princess.png';
-    const photoAlbum = document.getElementById('slideshow-img');
-    const downloadBtn = document.getElementById('downloadBtn');
     const bgMusic = document.getElementById('bgMusic');
+    const rewardOverlay = document.getElementById('rewardOverlay');
+    const slideshowImg = document.getElementById('slideshow-img');
+    const downloadBtn = document.getElementById('downloadBtn');
 
     const levelSizes = [10, 12, 14, 16, 18];
     let currentLevel = 0;
     let mazeSize, maze, player;
     let imageLoaded = false;
+    let currentPhotoIndex = 1;
+    const totalPhotos = 100;
+    let slideshowInterval;
 
-    princess.onload = () => { imageLoaded = true; };
+    princess.onload = () => imageLoaded = true;
 
     function startGame() {
       if (!imageLoaded) return alert("Princess is still loading...");
       currentLevel = 0;
       loadLevel(currentLevel);
-      if (!bgMusic.paused) bgMusic.pause(); // stop music if playing
-      reward.style.display = 'none';
+      rewardOverlay.style.display = 'none';
+      clearInterval(slideshowInterval);
+      if (!bgMusic.paused) bgMusic.pause();
     }
 
     function loadLevel(index) {
@@ -217,22 +232,12 @@
 
     document.addEventListener('keydown', e => move(e.key));
 
-    let currentPhotoIndex = 1;
-    const totalPhotos = 100;
-    let slideshowInterval;
-
     function showReward() {
-      reward.style.display = 'block';
-
-      // Fullscreen
+      rewardOverlay.style.display = 'flex';
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen();
       }
-
-      // Play background music
       bgMusic.play();
-
-      // Start slideshow
       currentPhotoIndex = 1;
       showPhoto(currentPhotoIndex);
       clearInterval(slideshowInterval);
@@ -244,10 +249,9 @@
 
     function showPhoto(index) {
       const photoPath = `photos/photo${index}.png`;
-      photoAlbum.src = photoPath;
-      photoAlbum.alt = `photo${index}`;
+      slideshowImg.src = photoPath;
+      slideshowImg.alt = `photo${index}`;
       downloadBtn.href = photoPath;
-      downloadBtn.download = `photo${index}.png`;
     }
 
     function nextPhoto() {
@@ -259,8 +263,6 @@
       currentPhotoIndex = (currentPhotoIndex - 2 + totalPhotos) % totalPhotos + 1;
       showPhoto(currentPhotoIndex);
     }
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
   </script>
 </body>
 </html>
