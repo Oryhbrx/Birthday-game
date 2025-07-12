@@ -37,7 +37,7 @@
     }
   </style>
 </head>
-<body>
+<body tabindex="0">
   <p>If you see this, the HTML file is loading correctly.</p>
   <h1 style="color: red;">🎮 Princess Pixel Maze 🎂</h1>
   <button onclick="startGame()">Start Game</button>
@@ -93,6 +93,9 @@
       ctx.fillStyle = 'pink';
       ctx.fillRect(player.x * tileSize, player.y * tileSize, tileSize, tileSize);
     }
+    window.onload = () => {
+  document.body.focus(); // Ensure body gets key focus
+};
 
 document.addEventListener('keydown', e => {
   console.log("Key pressed:", e.key); // ← Add this
