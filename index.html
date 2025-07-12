@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maze Game - Princess Quest</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Princess Regine's Pixel Maze 🎂</title>
   <style>
     body {
       margin: 0;
@@ -52,7 +52,7 @@
       align-items: center;
       flex-direction: column;
     }
-    #slideshow-img {
+    #slideshow-container video, #slideshow-container img {
       max-width: 90vw;
       max-height: 80vh;
       border-radius: 10px;
@@ -70,10 +70,18 @@
       color: red;
       font-weight: bold;
     }
+    .description {
+      color: red;
+      font-style: italic;
+      font-size: 16px;
+      margin-top: -10px;
+    }
   </style>
 </head>
 <body tabindex="0">
-  <h1 style="color: red;">🎮 Princess Pixel Maze 🎂</h1>
+  <h1 style="color: red;">🎮 Princess Regine's Pixel Maze 🎂</h1>
+  <p class="description">*The Sleeping Beauty* • *The Beauty and the Bills* • *Ang Babaeng May Mahiyaing Binti*</p>
+
   <button onclick="startGame()">Start Game</button>
   <button onclick="nextLevel()">Next Level</button>
   <button onclick="loadLevel(currentLevel)">Restart Level</button>
@@ -94,12 +102,15 @@
   </div>
 
   <div id="rewardOverlay">
-    <h2 style="color: red;">🎉 Happy Birthday! 🎉</h2>
-    <p style="color: red;">Here’s your special photo slideshow gift!</p>
-    <img id="slideshow-img" src="" alt="Photo" />
+    <h2 style="color: red;">🎉 Happy Birthday, Regine! 🎉</h2>
+    <p style="color: red;">Here’s your special slideshow gift — made with love!</p>
+    <div id="slideshow-container">
+      <img id="slideshow-img" src="" alt="Photo" style="display:none;" />
+      <video id="slideshow-video" controls style="display:none;"></video>
+    </div>
     <div id="slideshow-controls">
-      <button class="ctrl-btn" onclick="prevPhoto()">⬅️ Prev</button>
-      <button class="ctrl-btn" onclick="nextPhoto()">Next ➡️</button>
+      <button class="ctrl-btn" onclick="prevSlide()">⬅️ Prev</button>
+      <button class="ctrl-btn" onclick="nextSlide()">Next ➡️</button>
       <a id="downloadBtn" href="#" download><button class="ctrl-btn">📥 Download</button></a>
       <button class="ctrl-btn" onclick="startGame()">🔁 Replay Game</button>
     </div>
@@ -115,48 +126,21 @@
     const bgMusic = document.getElementById('bgMusic');
     const rewardOverlay = document.getElementById('rewardOverlay');
     const slideshowImg = document.getElementById('slideshow-img');
+    const slideshowVideo = document.getElementById('slideshow-video');
     const downloadBtn = document.getElementById('downloadBtn');
 
-const drivePhotoIDs = [
-  '108L_w_0bwfnYxL0XTHjvhK6-Q1lAGK8T',
-  '13B1hBmy7H6mpBezrH8Iy2VEJIAjA2tVQ',
-  '15NI5eERiLjsQJYiFw7SF5zwgNCcx7xT8',
-  '16YVv7xMb3hLfxLf8RVCnviq_MEaEtqoM',
-  '16nCcLbUS6I_cQlo3uOoFRI3VnYgDAtIF',
-  '17EfjKrFHRQOB6piIxpX8p27dhSkTqod2',
-  '1DMfR8LrjZSWom9nu8xxSBXdLLNZKTLJq',
-  '1Eaj0PFETJG8_OCIySjq_-ImqD_AWfIhI',
-  '1Equ54PEKlZfaGxsgntP7kSgXAotZPTdS',
-  '1GUs7Kod95La0lWYSBeTIHXltDacDqEpQ',
-  '1KS-JtNGmGoxMt0r92_6_mKYsxKXsjyRI',
-  '1L1UzjnwVypK_EuSNJprlCU2nH-cYvOvC',
-  '1LX27brMA5YJgyfGESkfg0kmadnelmrZ_',
-  '1RilephXgErdXsUBK5nAKSsAkIfwkpLn2',
-  '1T8PNflrVAnCrrqlZxV8W67oJi2ONcWVq',
-  '1W2KVLNVwRw5uHKNbHlxTR_CQLOhJYwT0',
-  '1WLr3zFvGCZxJHvsv3RnSYIEuLHAVwP6P',
-  '1XefON8OkP9p9auBpFUQFBkMi9iR0iJHg',
-  '1ZEBtOSVZSEPSOk5f9xixQAVW3yzIkfG3',
-  '1_JS8nA1-whx4TrX_1DdL4oHQqHrDzSJD',
-  '1_NtGYIjSDS8PLT6H4HdfOgckkQjG2HUm',
-  '1amcux2mPo77AQA6R_4w2CsbOz20seyui',
-  '1arQVcT9jp6gNmOvGkaxguVrzyoUwWwfC',
-  '1dKTSjVelGwBaDhwZ-LQmaStYkOQ7p8wi',
-  '1e74jH1uhnuXy3nA5jRqzPN1XQPcKUDrt',
-  '1ewJLjIm-w-4mIYPycuypw3RuGePylMzr',
-  '1fdOXU3pzncIbTz-7FncUFRM6Ur08RVgl',
-  '1hlJbO53cVF80NqORpfkAElvsxHUBxunJ',
-  '1ldXiPCDsaifW9FCM8omjV3N_frrm0uQH',
-  '1qfk-HXNCkom5se9a321sTcWd1lL3u0wq',
-  '1sQIlmS7NNcA3mt9v6u0grnABXbOncFjK',
-  '1zgilBAAlDJXGQxDNagZi-PVFffldLZKW'
-];
-    
-    const totalPhotos = drivePhotoIDs.length;
+    // MIX of photos and video links from Google Drive (shared publicly)
+    const slides = [
+      { type: 'image', id: '108L_w_0bwfnYxL0XTHjvhK6-Q1lAGK8T' },
+      { type: 'image', id: '13B1hBmy7H6mpBezrH8Iy2VEJIAjA2tVQ' },
+      { type: 'video', id: '1VD23FLMyv-EXAMPLE-VIDEO-DRIVE-ID' },
+      { type: 'image', id: '1qfk-HXNCkom5se9a321sTcWd1lL3u0wq' },
+    ];
+
     let currentLevel = 0;
     let mazeSize, maze, player;
     let imageLoaded = false;
-    let currentPhotoIndex = 1;
+    let currentSlideIndex = 0;
 
     princess.onload = () => imageLoaded = true;
 
@@ -250,33 +234,40 @@ const drivePhotoIDs = [
         document.documentElement.requestFullscreen();
       }
       bgMusic.play();
-      currentPhotoIndex = 1;
-      showPhoto(currentPhotoIndex);
+      currentSlideIndex = 0;
+      showSlide(currentSlideIndex);
     }
 
-function showPhoto(index) {
-  const id = drivePhotoIDs[index - 1];
-  const photoPath = `https://lh3.googleusercontent.com/d/${id}=s800`;
-  slideshowImg.src = photoPath;
-  slideshowImg.alt = `photo${index}`;
-  slideshowImg.onerror = () => {
-    alert(`Failed to load image ${index}. Check if it's shared publicly on Google Drive.`);
-  };
-  downloadBtn.href = `https://drive.google.com/uc?export=download&id=${id}`;
-}
+    function showSlide(index) {
+      const slide = slides[index];
+      const baseURL = 'https://drive.google.com/uc?export=';
+      slideshowImg.style.display = 'none';
+      slideshowVideo.style.display = 'none';
 
-    function nextPhoto() {
-      currentPhotoIndex = (currentPhotoIndex % totalPhotos) + 1;
-      showPhoto(currentPhotoIndex);
+      if (slide.type === 'image') {
+        const imgSrc = `https://lh3.googleusercontent.com/d/${slide.id}=s800`;
+        slideshowImg.src = imgSrc;
+        slideshowImg.style.display = 'block';
+        downloadBtn.href = `${baseURL}download&id=${slide.id}`;
+      } else if (slide.type === 'video') {
+        const vidSrc = `${baseURL}view&id=${slide.id}`;
+        slideshowVideo.src = `https://drive.google.com/uc?id=${slide.id}&export=download`;
+        slideshowVideo.style.display = 'block';
+        downloadBtn.href = `${baseURL}download&id=${slide.id}`;
+      }
     }
 
-    function prevPhoto() {
-      currentPhotoIndex = (currentPhotoIndex - 2 + totalPhotos) % totalPhotos + 1;
-      showPhoto(currentPhotoIndex);
+    function nextSlide() {
+      currentSlideIndex = (currentSlideIndex + 1) % slides.length;
+      showSlide(currentSlideIndex);
+    }
+
+    function prevSlide() {
+      currentSlideIndex = (currentSlideIndex - 1 + slides.length) % slides.length;
+      showSlide(currentSlideIndex);
     }
 
     document.addEventListener('keydown', e => move(e.key));
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
   </script>
 </body>
 </html>
