@@ -227,12 +227,15 @@ const drivePhotoIDs = [
       bgMusic.play();
       currentPhotoIndex = 1;
       showPhoto(currentPhotoIndex);
-    }
-
+    } 
+    
 function showPhoto(index) {
   const photoPath = `https://drive.google.com/uc?export=view&id=${drivePhotoIDs[index - 1]}`;
-  console.log(`Showing Photo ${index}: ${photoPath}`); // Optional for debugging
+  console.log(`Showing Photo ${index}: ${photoPath}`);
   slideshowImg.src = photoPath;
+  slideshowImg.onerror = () => {
+  alert(`Failed to load image ${index}. Check if it's shared publicly on Google Drive.`);
+};
   slideshowImg.alt = `photo${index}`;
   downloadBtn.href = photoPath;
 }
