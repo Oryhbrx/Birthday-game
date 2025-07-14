@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Princess Regine's Pixel Maze 🎂</title>
+  <title>Princess Regine's Pixel Maze </title>
   <style>
     body {
       margin: 0;
@@ -79,8 +79,14 @@
   </style>
 </head>
 <body tabindex="0">
-  <h1 style="color: red;">🎮 Princess Regine's Pixel Maze 🎂</h1>
-  <p class="description">*The Sleeping Beauty* • *The Beauty and the Bills* • *Ang Babaeng May Mahiyaing Binti*</p>
+  <div id="introOverlay" style="display:flex;flex-direction:column;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100vw;height:100vh;background:white;z-index:10000;">
+    <h1 style="color: red;">🎮 Princess Regine's Pixel Maze</h1>
+    <p class="description">*The Sleeping Beauty* <br> *The Beauty and the Bills* <br> *Ang Babaeng May Mahiyaing Binti*</p>
+    <p style="color:red;font-size:18px;max-width:400px;">Guide Princess Regine through the magical maze! Collect all the stars, beat your best time, and enjoy the adventure. Good luck!</p>
+    <button onclick="closeIntro()" style="font-size:22px;">Start Adventure</button>
+  </div>
+  <h1 style="color: red;display:none;">🎮 Princess Regine's Pixel Maze </h1>
+  <p class="description" style="display:none;">*The Sleeping Beauty* <br> *The Beauty and the Bills* <br> *Ang Babaeng May Mahiyaing Binti*</p>
 
   <button onclick="startGame()">Start Game</button>
   <button onclick="nextLevel()">Next Level</button>
@@ -88,6 +94,24 @@
   <button onclick="startGame()">🔁 Replay</button>
   <h2 id="levelDisplay" style="color: red;">Level: 1</h2>
   <canvas id="mazeCanvas" width="400" height="400"></canvas>
+
+  <div id="hud" style="margin-top:10px; color:red; font-weight:bold;">
+    <span id="timer">Time: 0.00s</span> |
+    <span id="stars">Stars: 0</span> |
+    <span id="bestTime">Best: --</span>
+  </div>
+
+  <div style="margin:10px;">
+    <button onclick="toggleDarkMode()" id="darkModeBtn">🌙 Dark Mode</button>
+    <button onclick="showCredits()">ℹ️ Credits</button>
+  </div>
+
+  <div style="margin:10px;">
+    <button onclick="pauseGame()">⏸️ Pause</button>
+    <button onclick="showHint()">💡 Hint</button>
+    <button onclick="showSettings()">⚙️ Settings</button>
+    <button onclick="showLeaderboard()">🏆 Leaderboard</button>
+  </div>
 
   <div id="controls">
     <div></div>
@@ -104,6 +128,31 @@
   <div id="rewardOverlay">
     <h2 style="color: red;">🎉 Happy Birthday, Regine! 🎉</h2>
     <p style="color: red;">Here’s your special slideshow gift — made with love!</p>
+
+  <div id="confetti" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:10001;"></div>
+
+  <div id="creditsModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);z-index:10002;flex-direction:column;align-items:center;justify-content:center;color:white;">
+    <h2>Credits</h2>
+    <p>Game by Alexis Chan &amp; GitHub Copilot<br>Art: Princess, Friends, and Maze by Alexis<br>Music &amp; SFX: royalty-free / custom<br>Special thanks: Regine 🎂</p>
+    <button onclick="closeCredits()">Close</button>
+  </div>
+  <div id="pauseOverlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.95);z-index:9998;flex-direction:column;align-items:center;justify-content:center;">
+    <h2 style="color:red;">⏸️ Paused</h2>
+    <button onclick="resumeGame()">Resume</button>
+  </div>
+
+  <div id="settingsModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
+    <h2 style="color:red;">⚙️ Settings</h2>
+    <label><input type="checkbox" id="musicToggle" checked> Music</label><br>
+    <label><input type="checkbox" id="sfxToggle" checked> Sound Effects</label><br>
+    <button onclick="closeSettings()">Close</button>
+  </div>
+
+  <div id="leaderboardModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
+    <h2 style="color:red;">🏆 Leaderboard</h2>
+    <div id="leaderboardContent" style="color:red;"></div>
+    <button onclick="closeLeaderboard()">Close</button>
+  </div>
     <div id="slideshow-container">
       <img id="slideshow-img" src="" alt="Photo" style="display:none;" />
       <video id="slideshow-video" controls style="display:none;"></video>
@@ -118,7 +167,92 @@
 
   <audio id="bgMusic" src="reward.mp3" preload="auto"></audio>
 
+  <audio id="moveSound" src="move.mp3" preload="auto"></audio>
+  <audio id="starSound" src="star.mp3" preload="auto"></audio>
+  <audio id="finishSound" src="finish.mp3" preload="auto"></audio>
+
 <script>
+// --- THEMES ---
+const themes = [
+  { name: 'Classic', wall: 'red', floor: 'white', goal: 'yellow', star: 'gold', path: 'blue' },
+  { name: 'Forest', wall: '#228B22', floor: '#e0ffe0', goal: '#ffe066', star: '#ffb700', path: '#2e8b57' },
+  { name: 'Ocean', wall: '#0077be', floor: '#e0f7fa', goal: '#fff176', star: '#00e5ff', path: '#0288d1' },
+  { name: 'Candy', wall: '#e75480', floor: '#fff0f5', goal: '#ffb347', star: '#ff69b4', path: '#ffb6c1' },
+  { name: 'Space', wall: '#222', floor: '#333', goal: '#fff', star: '#ffd700', path: '#00e5ff' }
+];
+let currentTheme = themes[Math.floor(Math.random()*themes.length)];
+// --- CONFETTI ---
+function showConfetti() {
+  const confetti = document.getElementById('confetti');
+  confetti.innerHTML = '';
+  confetti.style.display = 'block';
+  for (let i = 0; i < 80; i++) {
+    let c = document.createElement('div');
+    c.style.position = 'absolute';
+    c.style.left = Math.random()*100+'vw';
+    c.style.top = '-5vh';
+    c.style.width = '8px';
+    c.style.height = '18px';
+    c.style.background = `hsl(${Math.random()*360},90%,60%)`;
+    c.style.opacity = 0.8;
+    c.style.transform = `rotate(${Math.random()*360}deg)`;
+    c.style.borderRadius = '3px';
+    c.style.transition = 'top 1.2s cubic-bezier(.2,.7,.4,1), opacity 1.2s';
+    confetti.appendChild(c);
+    setTimeout(()=>{
+      c.style.top = '110vh';
+      c.style.opacity = 0;
+    }, 10);
+  }
+  setTimeout(()=>{ confetti.style.display = 'none'; }, 1400);
+}
+
+// --- STAR ANIMATION ---
+function animateStar(x, y) {
+  const tileSize = canvas.width / mazeSize;
+  const starDiv = document.createElement('div');
+  starDiv.style.position = 'absolute';
+  starDiv.style.left = (canvas.offsetLeft + x * tileSize + tileSize/2 - 10) + 'px';
+  starDiv.style.top = (canvas.offsetTop + y * tileSize + tileSize/2 - 10) + 'px';
+  starDiv.style.width = '20px';
+  starDiv.style.height = '20px';
+  starDiv.style.pointerEvents = 'none';
+  starDiv.style.zIndex = 1000;
+  starDiv.innerHTML = '⭐';
+  document.body.appendChild(starDiv);
+  setTimeout(()=>{ starDiv.style.transform = 'scale(2)'; starDiv.style.opacity = '0'; }, 10);
+  setTimeout(()=>{ document.body.removeChild(starDiv); }, 600);
+}
+// --- DARK MODE ---
+let darkMode = false;
+function toggleDarkMode() {
+  darkMode = !darkMode;
+  document.body.style.background = darkMode ? '#181818' : '#fff';
+  document.body.style.color = darkMode ? '#fff' : '#000';
+  document.getElementById('darkModeBtn').innerText = darkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+  document.querySelectorAll('button,.ctrl-btn').forEach(btn=>btn.style.background=darkMode?'#333':'red');
+  document.querySelectorAll('button,.ctrl-btn').forEach(btn=>btn.style.color=darkMode?'#fff':'#fff');
+}
+
+// --- CREDITS MODAL ---
+function showCredits() {
+  document.getElementById('creditsModal').style.display = 'flex';
+}
+function closeCredits() {
+  document.getElementById('creditsModal').style.display = 'none';
+}
+// --- INTRO SCREEN ---
+window.onload = function() {
+  document.getElementById('introOverlay').style.display = 'flex';
+  document.querySelector('h1').style.display = 'none';
+  document.querySelector('.description').style.display = 'none';
+};
+function closeIntro() {
+  document.getElementById('introOverlay').style.display = 'none';
+  document.querySelector('h1').style.display = '';
+  document.querySelector('.description').style.display = '';
+  startGame();
+}
   const canvas = document.getElementById('mazeCanvas');
   const ctx = canvas.getContext('2d');
 
@@ -146,6 +280,51 @@
   let imageLoaded = false;
   let currentSlideIndex = 0;
 
+  // Timer and collectibles
+  let timer = 0, timerInterval = null, bestTimes = JSON.parse(localStorage.getItem('mazeBestTimes')||'{}');
+  let stars = 0, starPositions = [];
+  let paused = false;
+
+// --- PAUSE FUNCTIONALITY ---
+function pauseGame() {
+  paused = true;
+  document.getElementById('pauseOverlay').style.display = 'flex';
+}
+function resumeGame() {
+  paused = false;
+  document.getElementById('pauseOverlay').style.display = 'none';
+}
+
+// --- SETTINGS MODAL ---
+function showSettings() {
+  document.getElementById('settingsModal').style.display = 'flex';
+}
+function closeSettings() {
+  document.getElementById('settingsModal').style.display = 'none';
+}
+document.getElementById('musicToggle').onchange = function() {
+  bgMusic.muted = !this.checked;
+};
+document.getElementById('sfxToggle').onchange = function() {
+  document.getElementById('moveSound').muted = !this.checked;
+  document.getElementById('starSound').muted = !this.checked;
+  document.getElementById('finishSound').muted = !this.checked;
+};
+
+// --- LEADERBOARD MODAL ---
+function showLeaderboard() {
+  let html = '';
+  for (let i = 0; i < 5; i++) {
+    let t = bestTimes[`level${i}`];
+    html += `Level ${i+1}: ${t ? t.toFixed(2)+'s' : '--'}<br>`;
+  }
+  document.getElementById('leaderboardContent').innerHTML = html;
+  document.getElementById('leaderboardModal').style.display = 'flex';
+}
+function closeLeaderboard() {
+  document.getElementById('leaderboardModal').style.display = 'none';
+}
+
   princessSprite.onload = () => imageLoaded = true;
 
   function drawPrincess(x, y, tileSize) {
@@ -163,12 +342,67 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (let y = 0; y < mazeSize; y++) {
       for (let x = 0; x < mazeSize; x++) {
-        ctx.fillStyle = (x === mazeSize - 1 && y === mazeSize - 1) ? 'yellow' : (maze[y][x] === 1 ? 'red' : 'white');
+        ctx.fillStyle = (x === mazeSize - 1 && y === mazeSize - 1) ? currentTheme.goal : (maze[y][x] === 1 ? currentTheme.wall : currentTheme.floor);
         ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+        // Draw star collectible
+        if (starPositions.some(pos => pos.x === x && pos.y === y)) {
+          ctx.save();
+          ctx.shadowColor = currentTheme.star;
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = currentTheme.star;
+          ctx.beginPath();
+          ctx.arc(x * tileSize + tileSize/2, y * tileSize + tileSize/2, tileSize/4, 0, 2*Math.PI);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+          ctx.strokeStyle = 'orange';
+          ctx.stroke();
+          ctx.restore();
+        }
       }
     }
     drawPrincess(player.x, player.y, tileSize);
+    // Draw hint path if active
+    if (window.hintPath && window.hintPath.length) {
+      ctx.save();
+      ctx.globalAlpha = 0.5;
+      ctx.strokeStyle = currentTheme.path;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      for (let i = 0; i < window.hintPath.length; i++) {
+        let {x, y} = window.hintPath[i];
+        let cx = x * tileSize + tileSize/2, cy = y * tileSize + tileSize/2;
+        if (i === 0) ctx.moveTo(cx, cy);
+        else ctx.lineTo(cx, cy);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
   }
+// --- HINT FUNCTIONALITY ---
+function showHint() {
+  window.hintPath = findPath(player.x, player.y, mazeSize-1, mazeSize-1);
+  drawMaze();
+  setTimeout(() => { window.hintPath = null; drawMaze(); }, 1500);
+}
+
+// Simple BFS pathfinder
+function findPath(sx, sy, ex, ey) {
+  let queue = [[sx, sy, []]];
+  let visited = Array(mazeSize).fill().map(()=>Array(mazeSize).fill(false));
+  visited[sy][sx] = true;
+  while (queue.length) {
+    let [x, y, path] = queue.shift();
+    if (x === ex && y === ey) return [...path, {x, y}];
+    for (let [dx, dy] of [[0,1],[1,0],[0,-1],[-1,0]]) {
+      let nx = x+dx, ny = y+dy;
+      if (nx>=0 && ny>=0 && nx<mazeSize && ny<mazeSize && maze[ny][nx]===0 && !visited[ny][nx]) {
+        visited[ny][nx]=true;
+        queue.push([nx,ny,[...path,{x,y}]]);
+      }
+    }
+  }
+  return [];
+}
 if (currentLevel === 4) {
   const friendsSprite = new Image();
   friendsSprite.src = 'friends.png'; // your image with Prince Kaboom, Fairy Trill, Meowdy the Cat
@@ -189,14 +423,40 @@ if (currentLevel === 4) {
     loadLevel(currentLevel);
     rewardOverlay.style.display = 'none';
     if (!bgMusic.paused) bgMusic.pause();
+
+    // Reset timer and stars
+    timer = 0;
+    stars = 0;
+    updateHUD();
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+      if (!paused) {
+        timer += 0.01;
+        updateHUD();
+      }
+    }, 10);
   }
 
   function loadLevel(index) {
     mazeSize = [10, 12, 14, 16, 18][index];
     maze = generateMaze(mazeSize);
     player = { x: 0, y: 0 };
+    // Place stars randomly (3 per level, not on start/end)
+    starPositions = [];
+    while (starPositions.length < 3) {
+      let sx = Math.floor(Math.random() * mazeSize);
+      let sy = Math.floor(Math.random() * mazeSize);
+      if ((sx !== 0 || sy !== 0) && (sx !== mazeSize-1 || sy !== mazeSize-1) && maze[sy][sx] === 0 && !starPositions.some(pos => pos.x === sx && pos.y === sy)) {
+        starPositions.push({x: sx, y: sy});
+      }
+    }
+    // Randomize theme each level
+    currentTheme = themes[Math.floor(Math.random()*themes.length)];
     drawMaze();
-    document.getElementById('levelDisplay').innerText = `Level: ${index + 1}`;
+    document.getElementById('levelDisplay').innerText = `Level: ${index + 1} - ${currentTheme.name}`;
+    timer = 0;
+    stars = 0;
+    updateHUD();
   }
 
   function nextLevel() {
@@ -209,7 +469,7 @@ if (currentLevel === 4) {
   }
 
   function move(direction) {
-    if (!player || !imageLoaded) return;
+    if (!player || !imageLoaded || paused) return;
 
     let dx = 0, dy = 0;
     if (direction === 'ArrowUp') dy = -1;
@@ -230,13 +490,47 @@ if (currentLevel === 4) {
         frameIndex = (frameIndex + 1) % frameCount;
       }
 
+      // Play move sound
+      document.getElementById('moveSound').currentTime = 0;
+      document.getElementById('moveSound').play();
+
+      // Collect star if present (with animation)
+      let starIdx = starPositions.findIndex(pos => pos.x === nx && pos.y === ny);
+      if (starIdx !== -1) {
+        stars++;
+        animateStar(nx, ny);
+        starPositions.splice(starIdx, 1);
+        document.getElementById('starSound').currentTime = 0;
+        document.getElementById('starSound').play();
+      }
+
       drawMaze();
+      updateHUD();
 
       if (nx === mazeSize - 1 && ny === mazeSize - 1) {
+        document.getElementById('finishSound').currentTime = 0;
+        document.getElementById('finishSound').play();
+        // Save best time
+        let key = `level${currentLevel}`;
+        if (!bestTimes[key] || timer < bestTimes[key]) {
+          bestTimes[key] = timer;
+          localStorage.setItem('mazeBestTimes', JSON.stringify(bestTimes));
+        }
         currentLevel++;
-        currentLevel < 5 ? setTimeout(() => loadLevel(currentLevel), 500) : showReward();
+        if (currentLevel < 5) {
+          setTimeout(() => loadLevel(currentLevel), 500);
+        } else {
+          showConfetti();
+          setTimeout(() => showReward(), 1200);
+        }
       }
     }
+  }
+  function updateHUD() {
+    document.getElementById('timer').innerText = `Time: ${timer.toFixed(2)}s`;
+    document.getElementById('stars').innerText = `Stars: ${stars}`;
+    let best = bestTimes[`level${currentLevel}`];
+    document.getElementById('bestTime').innerText = best ? `Best: ${best.toFixed(2)}s` : 'Best: --';
   }
 
   function generateMaze(size) {
