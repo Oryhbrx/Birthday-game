@@ -175,44 +175,24 @@ function drawMaze() {
 
   for (let y = 0; y < maze.length; y++) {
     for (let x = 0; x < maze[y].length; x++) {
-if (maze[y][x] === 1) {
-  ctx.fillStyle = '#d81b60'; // wall
-  ctx.fillRect(x * 32, y * 32, 32, 32);
-} else {
-  ctx.fillStyle = '#ffffff'; // floor
-  ctx.fillRect(x * 32, y * 32, 32, 32);
-  if (maze[y][x] === 2) {
-    ctx.font = '24px serif';
-    ctx.fillText('💃', x * 32 + 4, y * 32 + 26); // emoji goal
-  }
-}
-
-  ctx.fillStyle = '#4a148c';
-  ctx.fillRect(player.x * 32 + 4, player.y * 32 + 4, 24, 24);
-}
-
-    function movePlayer(dx, dy) {
-      const maze = levels[currentLevel];
-      const newX = player.x + dx;
-      const newY = player.y + dy;
-      if (maze[newY][newX] !== 1) {
-        player.x = newX;
-        player.y = newY;
-        drawMaze();
-        if (maze[newY][newX] === 2) {
-          currentLevel++;
-          if (currentLevel >= levels.length) {
-            document.getElementById('winMessage').style.display = 'block';
-            document.getElementById('endControls').style.display = 'flex';
-            document.getElementById('slideshow').style.display = 'flex';
-            document.getElementById('birthdayVideo').style.display = 'block';
-            return;
-          }
-          player.x = 1; player.y = 1;
-          levelDisplay.textContent = currentLevel + 1;
+      if (maze[y][x] === 1) {
+        ctx.fillStyle = '#d81b60'; // wall
+        ctx.fillRect(x * 32, y * 32, 32, 32);
+      } else {
+        ctx.fillStyle = '#ffffff'; // floor
+        ctx.fillRect(x * 32, y * 32, 32, 32);
+        if (maze[y][x] === 2) {
+          ctx.font = '24px serif';
+          ctx.fillText('🎁', x * 32 + 4, y * 32 + 26); // 🎁 = goal
         }
       }
     }
+  }
+
+  // 👸 Princess emoji as player
+  ctx.font = '24px serif';
+  ctx.fillText('👸', player.x * 32 + 4, player.y * 32 + 26);
+}
 
     function toggleMusic() {
       const music = document.getElementById('bgMusic');
