@@ -3,606 +3,86 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Princess Regine's Pixel Maze </title>
+  <title>Princess Regine's Pixel Maze 🎂</title>
   <style>
     body {
       margin: 0;
-      font-family: sans-serif;
-      background: #fff;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #fdf1f1;
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      margin: 10px 0;
+      color: #e91e63;
+      font-size: 2rem;
+      text-align: center;
     }
     canvas {
-      border: 2px solid red;
-      margin-top: 20px;
+      border: 4px dashed #e91e63;
+      margin: 20px 0;
+      max-width: 100%;
+      height: auto;
     }
-    button, .ctrl-btn {
-      margin: 5px;
-      padding: 10px 15px;
-      background: red;
-      color: white;
-      border: none;
-      font-weight: bold;
-      font-size: 18px;
-      cursor: pointer;
-      border-radius: 8px;
-    }
-    #controls {
-      margin-top: 20px;
-      display: grid;
-      grid-template-columns: 50px 50px 50px;
-      gap: 10px;
-    }
-    #controls div {
+    .controls {
       display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    #rewardOverlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(255, 255, 255, 0.98);
-      z-index: 9999;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-    }
-    #slideshow-container video, #slideshow-container img {
-      max-width: 90vw;
-      max-height: 80vh;
-      border-radius: 10px;
-      box-shadow: 0 0 20px red;
-    }
-    #slideshow-controls {
-      margin-top: 20px;
-      display: flex;
-      gap: 15px;
       flex-wrap: wrap;
       justify-content: center;
+      gap: 10px;
     }
-    #slideshow-controls a {
-      text-decoration: none;
-      color: red;
-      font-weight: bold;
+    button, .ctrl-btn {
+      padding: 12px 20px;
+      font-size: 1rem;
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
     }
-    .description {
-      color: red;
-      font-style: italic;
-      font-size: 16px;
-      margin-top: -10px;
+    button:hover, .ctrl-btn:hover {
+      background-color: #c2185b;
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+      button, .ctrl-btn {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+      }
     }
   </style>
 </head>
-<body tabindex="0">
-  <div id="introOverlay" style="display:flex;flex-direction:column;align-items:center;justify-content:center;position:fixed;top:0;left:0;width:100vw;height:100vh;background:white;z-index:10000;">
-    <h1 style="color: red;">🎮 Princess Regine's Pixel Maze</h1>
-    <p class="description">*The Sleeping Beauty* <br> *The Beauty and the Bills* <br> *Ang Babaeng May Mahiyaing Binti*</p>
-    <p style="color:red;font-size:18px;max-width:400px;">Guide Princess Regine through the magical maze! Collect all the stars, beat your best time, and enjoy the adventure. Good luck!</p>
-    <button onclick="closeIntro()" style="font-size:22px;">Start Adventure</button>
-  </div>
-  <h1 style="color: red;display:none;">🎮 Princess Regine's Pixel Maze </h1>
-  <p class="description" style="display:none;">*The Sleeping Beauty* <br> *The Beauty and the Bills* <br> *Ang Babaeng May Mahiyaing Binti*</p>
+<body>
+  <h1>🎉 Welcome to Princess Regine's Pixel Maze 🎮</h1>
 
-  <button onclick="startGame()">Start Game</button>
-  <button onclick="nextLevel()">Next Level</button>
-  <button onclick="loadLevel(currentLevel)">Restart Level</button>
-  <button onclick="startGame()">🔁 Replay</button>
-  <h2 id="levelDisplay" style="color: red;">Level: 1</h2>
-  <canvas id="mazeCanvas" width="400" height="400"></canvas>
+  <canvas id="mazeCanvas" width="600" height="400"></canvas>
 
-  <div id="hud" style="margin-top:10px; color:red; font-weight:bold;">
-    <span id="timer">Time: 0.00s</span> |
-    <span id="stars">Stars: 0</span> |
-    <span id="bestTime">Best: --</span>
+  <div class="controls">
+    <button onclick="startGame()">Start</button>
+    <button onclick="resetGame()">Reset</button>
   </div>
 
-  <div style="margin:10px;">
-    <button onclick="toggleDarkMode()" id="darkModeBtn">🌙 Dark Mode</button>
-    <button onclick="showCredits()">ℹ️ Credits</button>
-  </div>
+  <script>
+    // Placeholder canvas logic
+    const canvas = document.getElementById('mazeCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = "#ffe0e0";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#e91e63";
+    ctx.font = "24px monospace";
+    ctx.fillText("Maze Game Coming Soon!", 150, 200);
 
-  <div style="margin:10px;">
-    <button onclick="pauseGame()">⏸️ Pause</button>
-    <button onclick="showHint()">💡 Hint</button>
-    <button onclick="showSettings()">⚙️ Settings</button>
-    <button onclick="showLeaderboard()">🏆 Leaderboard</button>
-  </div>
-
-  <div id="controls">
-    <div></div>
-    <div><button class="ctrl-btn" onclick="move('ArrowUp')">⬆️</button></div>
-    <div></div>
-    <div><button class="ctrl-btn" onclick="move('ArrowLeft')">⬅️</button></div>
-    <div></div>
-    <div><button class="ctrl-btn" onclick="move('ArrowRight')">➡️</button></div>
-    <div></div>
-    <div><button class="ctrl-btn" onclick="move('ArrowDown')">⬇️</button></div>
-    <div></div>
-  </div>
-
-  <div id="rewardOverlay">
-    <h2 style="color: red;">🎉 Happy Birthday, Regine! 🎉</h2>
-    <p style="color: red;">Here’s your special slideshow gift — made with love!</p>
-
-  <div id="confetti" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:10001;"></div>
-
-  <div id="creditsModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.8);z-index:10002;flex-direction:column;align-items:center;justify-content:center;color:white;">
-    <h2>Credits</h2>
-    <p>Game by Alexis Chan &amp; GitHub Copilot<br>Art: Princess, Friends, and Maze by Alexis<br>Music &amp; SFX: royalty-free / custom<br>Special thanks: Regine 🎂</p>
-    <button onclick="closeCredits()">Close</button>
-  </div>
-  <div id="pauseOverlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.95);z-index:9998;flex-direction:column;align-items:center;justify-content:center;">
-    <h2 style="color:red;">⏸️ Paused</h2>
-    <button onclick="resumeGame()">Resume</button>
-  </div>
-
-  <div id="settingsModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
-    <h2 style="color:red;">⚙️ Settings</h2>
-    <label><input type="checkbox" id="musicToggle" checked> Music</label><br>
-    <label><input type="checkbox" id="sfxToggle" checked> Sound Effects</label><br>
-    <button onclick="closeSettings()">Close</button>
-  </div>
-
-  <div id="leaderboardModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.97);z-index:9999;flex-direction:column;align-items:center;justify-content:center;">
-    <h2 style="color:red;">🏆 Leaderboard</h2>
-    <div id="leaderboardContent" style="color:red;"></div>
-    <button onclick="closeLeaderboard()">Close</button>
-  </div>
-    <div id="slideshow-container">
-      <img id="slideshow-img" src="" alt="Photo" style="display:none;" />
-      <video id="slideshow-video" controls style="display:none;"></video>
-    </div>
-    <div id="slideshow-controls">
-      <button class="ctrl-btn" onclick="prevSlide()">⬅️ Prev</button>
-      <button class="ctrl-btn" onclick="nextSlide()">Next ➡️</button>
-      <a id="downloadBtn" href="#" download><button class="ctrl-btn">📥 Download</button></a>
-      <button class="ctrl-btn" onclick="startGame()">🔁 Replay Game</button>
-    </div>
-  </div>
-
-  <audio id="bgMusic" src="reward.mp3" preload="auto"></audio>
-
-  <audio id="moveSound" src="move.mp3" preload="auto"></audio>
-  <audio id="starSound" src="star.mp3" preload="auto"></audio>
-  <audio id="finishSound" src="finish.mp3" preload="auto"></audio>
-
-<script>
-// --- THEMES ---
-const themes = [
-  { name: 'Classic', wall: 'red', floor: 'white', goal: 'yellow', star: 'gold', path: 'blue' },
-  { name: 'Forest', wall: '#228B22', floor: '#e0ffe0', goal: '#ffe066', star: '#ffb700', path: '#2e8b57' },
-  { name: 'Ocean', wall: '#0077be', floor: '#e0f7fa', goal: '#fff176', star: '#00e5ff', path: '#0288d1' },
-  { name: 'Candy', wall: '#e75480', floor: '#fff0f5', goal: '#ffb347', star: '#ff69b4', path: '#ffb6c1' },
-  { name: 'Space', wall: '#222', floor: '#333', goal: '#fff', star: '#ffd700', path: '#00e5ff' }
-];
-let currentTheme = themes[Math.floor(Math.random()*themes.length)];
-// --- CONFETTI ---
-function showConfetti() {
-  const confetti = document.getElementById('confetti');
-  confetti.innerHTML = '';
-  confetti.style.display = 'block';
-  for (let i = 0; i < 80; i++) {
-    let c = document.createElement('div');
-    c.style.position = 'absolute';
-    c.style.left = Math.random()*100+'vw';
-    c.style.top = '-5vh';
-    c.style.width = '8px';
-    c.style.height = '18px';
-    c.style.background = `hsl(${Math.random()*360},90%,60%)`;
-    c.style.opacity = 0.8;
-    c.style.transform = `rotate(${Math.random()*360}deg)`;
-    c.style.borderRadius = '3px';
-    c.style.transition = 'top 1.2s cubic-bezier(.2,.7,.4,1), opacity 1.2s';
-    confetti.appendChild(c);
-    setTimeout(()=>{
-      c.style.top = '110vh';
-      c.style.opacity = 0;
-    }, 10);
-  }
-  setTimeout(()=>{ confetti.style.display = 'none'; }, 1400);
-}
-
-// --- STAR ANIMATION ---
-function animateStar(x, y) {
-  const tileSize = canvas.width / mazeSize;
-  const starDiv = document.createElement('div');
-  starDiv.style.position = 'absolute';
-  starDiv.style.left = (canvas.offsetLeft + x * tileSize + tileSize/2 - 10) + 'px';
-  starDiv.style.top = (canvas.offsetTop + y * tileSize + tileSize/2 - 10) + 'px';
-  starDiv.style.width = '20px';
-  starDiv.style.height = '20px';
-  starDiv.style.pointerEvents = 'none';
-  starDiv.style.zIndex = 1000;
-  starDiv.innerHTML = '⭐';
-  document.body.appendChild(starDiv);
-  setTimeout(()=>{ starDiv.style.transform = 'scale(2)'; starDiv.style.opacity = '0'; }, 10);
-  setTimeout(()=>{ document.body.removeChild(starDiv); }, 600);
-}
-// --- DARK MODE ---
-let darkMode = false;
-function toggleDarkMode() {
-  darkMode = !darkMode;
-  document.body.style.background = darkMode ? '#181818' : '#fff';
-  document.body.style.color = darkMode ? '#fff' : '#000';
-  document.getElementById('darkModeBtn').innerText = darkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
-  document.querySelectorAll('button,.ctrl-btn').forEach(btn=>btn.style.background=darkMode?'#333':'red');
-  document.querySelectorAll('button,.ctrl-btn').forEach(btn=>btn.style.color=darkMode?'#fff':'#fff');
-}
-
-// --- CREDITS MODAL ---
-function showCredits() {
-  document.getElementById('creditsModal').style.display = 'flex';
-}
-function closeCredits() {
-  document.getElementById('creditsModal').style.display = 'none';
-}
-// --- INTRO SCREEN ---
-window.onload = function() {
-  document.getElementById('introOverlay').style.display = 'flex';
-  document.querySelector('h1').style.display = 'none';
-  document.querySelector('.description').style.display = 'none';
-};
-function closeIntro() {
-  document.getElementById('introOverlay').style.display = 'none';
-  document.querySelector('h1').style.display = '';
-  document.querySelector('.description').style.display = '';
-  startGame();
-}
-  const canvas = document.getElementById('mazeCanvas');
-  const ctx = canvas.getContext('2d');
-
-  const princessSprite = new Image();
-  princessSprite.src = 'princess-walk.png'; // make sure this has 4 horizontal frames
-  const frameCount = 4;
-  let frameIndex = 0;
-  let frameTick = 0;
-
-  const bgMusic = document.getElementById('bgMusic');
-  const rewardOverlay = document.getElementById('rewardOverlay');
-  const slideshowImg = document.getElementById('slideshow-img');
-  const slideshowVideo = document.getElementById('slideshow-video');
-  const downloadBtn = document.getElementById('downloadBtn');
-
-  const slides = [
-    { type: 'image', id: '108L_w_0bwfnYxL0XTHjvhK6-Q1lAGK8T' },
-    { type: 'image', id: '13B1hBmy7H6mpBezrH8Iy2VEJIAjA2tVQ' },
-    { type: 'video', id: '1VD23FLMyv-EXAMPLE-VIDEO-DRIVE-ID' },
-    { type: 'image', id: '1qfk-HXNCkom5se9a321sTcWd1lL3u0wq' },
-  ];
-
-  let currentLevel = 0;
-  let mazeSize, maze, player;
-  let imageLoaded = false;
-  let currentSlideIndex = 0;
-
-  // Timer and collectibles
-  let timer = 0, timerInterval = null, bestTimes = JSON.parse(localStorage.getItem('mazeBestTimes')||'{}');
-  let stars = 0, starPositions = [];
-  let paused = false;
-
-// --- PAUSE FUNCTIONALITY ---
-function pauseGame() {
-  paused = true;
-  document.getElementById('pauseOverlay').style.display = 'flex';
-}
-function resumeGame() {
-  paused = false;
-  document.getElementById('pauseOverlay').style.display = 'none';
-}
-
-// --- SETTINGS MODAL ---
-function showSettings() {
-  document.getElementById('settingsModal').style.display = 'flex';
-}
-function closeSettings() {
-  document.getElementById('settingsModal').style.display = 'none';
-}
-document.getElementById('musicToggle').onchange = function() {
-  bgMusic.muted = !this.checked;
-};
-document.getElementById('sfxToggle').onchange = function() {
-  document.getElementById('moveSound').muted = !this.checked;
-  document.getElementById('starSound').muted = !this.checked;
-  document.getElementById('finishSound').muted = !this.checked;
-};
-
-// --- LEADERBOARD MODAL ---
-function showLeaderboard() {
-  let html = '';
-  for (let i = 0; i < 5; i++) {
-    let t = bestTimes[`level${i}`];
-    html += `Level ${i+1}: ${t ? t.toFixed(2)+'s' : '--'}<br>`;
-  }
-  document.getElementById('leaderboardContent').innerHTML = html;
-  document.getElementById('leaderboardModal').style.display = 'flex';
-}
-function closeLeaderboard() {
-  document.getElementById('leaderboardModal').style.display = 'none';
-}
-
-  princessSprite.onload = () => imageLoaded = true;
-
-  function drawPrincess(x, y, tileSize) {
-    const frameWidth = princessSprite.width / frameCount;
-    const frameHeight = princessSprite.height;
-    ctx.drawImage(
-      princessSprite,
-      frameIndex * frameWidth, 0, frameWidth, frameHeight,
-      x * tileSize, y * tileSize, tileSize, tileSize
-    );
-  }
-
-  function drawMaze() {
-    const tileSize = canvas.width / mazeSize;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    for (let y = 0; y < mazeSize; y++) {
-      for (let x = 0; x < mazeSize; x++) {
-        ctx.fillStyle = (x === mazeSize - 1 && y === mazeSize - 1) ? currentTheme.goal : (maze[y][x] === 1 ? currentTheme.wall : currentTheme.floor);
-        ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-        // Draw star collectible
-        if (starPositions.some(pos => pos.x === x && pos.y === y)) {
-          ctx.save();
-          ctx.shadowColor = currentTheme.star;
-          ctx.shadowBlur = 10;
-          ctx.fillStyle = currentTheme.star;
-          ctx.beginPath();
-          ctx.arc(x * tileSize + tileSize/2, y * tileSize + tileSize/2, tileSize/4, 0, 2*Math.PI);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-          ctx.strokeStyle = 'orange';
-          ctx.stroke();
-          ctx.restore();
-        }
-      }
+    function startGame() {
+      alert("Game will start here!");
     }
-    drawPrincess(player.x, player.y, tileSize);
-    // Draw hint path if active
-    if (window.hintPath && window.hintPath.length) {
-      ctx.save();
-      ctx.globalAlpha = 0.5;
-      ctx.strokeStyle = currentTheme.path;
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      for (let i = 0; i < window.hintPath.length; i++) {
-        let {x, y} = window.hintPath[i];
-        let cx = x * tileSize + tileSize/2, cy = y * tileSize + tileSize/2;
-        if (i === 0) ctx.moveTo(cx, cy);
-        else ctx.lineTo(cx, cy);
-      }
-      ctx.stroke();
-      ctx.restore();
+
+    function resetGame() {
+      alert("Game will reset here!");
     }
-  }
-// --- HINT FUNCTIONALITY ---
-function showHint() {
-  window.hintPath = findPath(player.x, player.y, mazeSize-1, mazeSize-1);
-  drawMaze();
-  setTimeout(() => { window.hintPath = null; drawMaze(); }, 1500);
-}
-
-// Simple BFS pathfinder
-function findPath(sx, sy, ex, ey) {
-  let queue = [[sx, sy, []]];
-  let visited = Array(mazeSize).fill().map(()=>Array(mazeSize).fill(false));
-  visited[sy][sx] = true;
-  while (queue.length) {
-    let [x, y, path] = queue.shift();
-    if (x === ex && y === ey) return [...path, {x, y}];
-    for (let [dx, dy] of [[0,1],[1,0],[0,-1],[-1,0]]) {
-      let nx = x+dx, ny = y+dy;
-      if (nx>=0 && ny>=0 && nx<mazeSize && ny<mazeSize && maze[ny][nx]===0 && !visited[ny][nx]) {
-        visited[ny][nx]=true;
-        queue.push([nx,ny,[...path,{x,y}]]);
-      }
-    }
-  }
-  return [];
-}
-if (currentLevel === 4) {
-  const friendsSprite = new Image();
-  friendsSprite.src = 'friends.png'; // your image with Prince Kaboom, Fairy Trill, Meowdy the Cat
-
-  friendsSprite.onload = () => {
-    ctx.drawImage(
-      friendsSprite,
-      (mazeSize - 1) * tileSize - 10,
-      (mazeSize - 1) * tileSize - 30,
-      tileSize * 1.8,
-      tileSize * 1.5
-    );
-  };
-}
-  function startGame() {
-    if (!imageLoaded) return alert("Princess is still loading...");
-    currentLevel = 0;
-    loadLevel(currentLevel);
-    rewardOverlay.style.display = 'none';
-    if (!bgMusic.paused) bgMusic.pause();
-
-    // Reset timer and stars
-    timer = 0;
-    stars = 0;
-    updateHUD();
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      if (!paused) {
-        timer += 0.01;
-        updateHUD();
-      }
-    }, 10);
-  }
-
-  function loadLevel(index) {
-    mazeSize = [10, 12, 14, 16, 18][index];
-    maze = generateMaze(mazeSize);
-    player = { x: 0, y: 0 };
-    // Place stars randomly (3 per level, not on start/end)
-    starPositions = [];
-    while (starPositions.length < 3) {
-      let sx = Math.floor(Math.random() * mazeSize);
-      let sy = Math.floor(Math.random() * mazeSize);
-      if ((sx !== 0 || sy !== 0) && (sx !== mazeSize-1 || sy !== mazeSize-1) && maze[sy][sx] === 0 && !starPositions.some(pos => pos.x === sx && pos.y === sy)) {
-        starPositions.push({x: sx, y: sy});
-      }
-    }
-    // Randomize theme each level
-    currentTheme = themes[Math.floor(Math.random()*themes.length)];
-    drawMaze();
-    document.getElementById('levelDisplay').innerText = `Level: ${index + 1} - ${currentTheme.name}`;
-    timer = 0;
-    stars = 0;
-    updateHUD();
-  }
-
-  function nextLevel() {
-    if (currentLevel < 4) {
-      currentLevel++;
-      loadLevel(currentLevel);
-    } else {
-      showReward();
-    }
-  }
-
-  function move(direction) {
-    if (!player || !imageLoaded || paused) return;
-
-    let dx = 0, dy = 0;
-    if (direction === 'ArrowUp') dy = -1;
-    if (direction === 'ArrowDown') dy = 1;
-    if (direction === 'ArrowLeft') dx = -1;
-    if (direction === 'ArrowRight') dx = 1;
-
-    const nx = player.x + dx;
-    const ny = player.y + dy;
-
-    if (nx >= 0 && ny >= 0 && nx < mazeSize && ny < mazeSize && maze[ny][nx] === 0) {
-      player.x = nx;
-      player.y = ny;
-
-      // Animate princess walking
-      frameTick++;
-      if (frameTick % 6 === 0) {
-        frameIndex = (frameIndex + 1) % frameCount;
-      }
-
-      // Play move sound
-      document.getElementById('moveSound').currentTime = 0;
-      document.getElementById('moveSound').play();
-
-      // Collect star if present (with animation)
-      let starIdx = starPositions.findIndex(pos => pos.x === nx && pos.y === ny);
-      if (starIdx !== -1) {
-        stars++;
-        animateStar(nx, ny);
-        starPositions.splice(starIdx, 1);
-        document.getElementById('starSound').currentTime = 0;
-        document.getElementById('starSound').play();
-      }
-
-      drawMaze();
-      updateHUD();
-
-      if (nx === mazeSize - 1 && ny === mazeSize - 1) {
-        document.getElementById('finishSound').currentTime = 0;
-        document.getElementById('finishSound').play();
-        // Save best time
-        let key = `level${currentLevel}`;
-        if (!bestTimes[key] || timer < bestTimes[key]) {
-          bestTimes[key] = timer;
-          localStorage.setItem('mazeBestTimes', JSON.stringify(bestTimes));
-        }
-        currentLevel++;
-        if (currentLevel < 5) {
-          setTimeout(() => loadLevel(currentLevel), 500);
-        } else {
-          showConfetti();
-          setTimeout(() => showReward(), 1200);
-        }
-      }
-    }
-  }
-  function updateHUD() {
-    document.getElementById('timer').innerText = `Time: ${timer.toFixed(2)}s`;
-    document.getElementById('stars').innerText = `Stars: ${stars}`;
-    let best = bestTimes[`level${currentLevel}`];
-    document.getElementById('bestTime').innerText = best ? `Best: ${best.toFixed(2)}s` : 'Best: --';
-  }
-
-  function generateMaze(size) {
-    const maze = Array(size).fill().map(() => Array(size).fill(1));
-    const visited = Array(size).fill().map(() => Array(size).fill(false));
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
-      return arr;
-    }
-    function carve(x, y) {
-      visited[y][x] = true;
-      maze[y][x] = 0;
-      const directions = shuffle([[0, -1], [0, 1], [-1, 0], [1, 0]]);
-      for (const [dx, dy] of directions) {
-        const nx = x + dx * 2, ny = y + dy * 2;
-        if (nx >= 0 && ny >= 0 && nx < size && ny < size && !visited[ny][nx]) {
-          maze[y + dy][x + dx] = 0;
-          carve(nx, ny);
-        }
-      }
-    }
-    carve(0, 0);
-    maze[size - 1][size - 1] = 0;
-    if ((maze[size - 2]?.[size - 1] ?? 1) === 1 && (maze[size - 1]?.[size - 2] ?? 1) === 1) {
-      size > 2 ? maze[size - 2][size - 1] = 0 : maze[size - 1][size - 2] = 0;
-    }
-    return maze;
-  }
-
-  function showReward() {
-    rewardOverlay.style.display = 'flex';
-    if (document.documentElement.requestFullscreen) {
-      document.documentElement.requestFullscreen();
-    }
-    bgMusic.play();
-    currentSlideIndex = 0;
-    showSlide(currentSlideIndex);
-  }
-
-  function showSlide(index) {
-    const slide = slides[index];
-    const baseURL = 'https://drive.google.com/uc?export=';
-    slideshowImg.style.display = 'none';
-    slideshowVideo.style.display = 'none';
-
-    if (slide.type === 'image') {
-      const imgSrc = `https://lh3.googleusercontent.com/d/${slide.id}=s800`;
-      slideshowImg.src = imgSrc;
-      slideshowImg.style.display = 'block';
-      downloadBtn.href = `${baseURL}download&id=${slide.id}`;
-    } 
-    else if (slide.type === 'video') {
-      slideshowVideo.src = `https://drive.google.com/uc?id=${slide.id}&export=download`;
-      slideshowVideo.style.display = 'block';
-      downloadBtn.href = `${baseURL}download&id=${slide.id}`;
-    }
-  }
-
-  function nextSlide() {
-    currentSlideIndex = (currentSlideIndex + 1) % slides.length;
-    showSlide(currentSlideIndex);
-  }
-
-  function prevSlide() {
-    currentSlideIndex = (currentSlideIndex - 1 + slides.length) % slides.length;
-    showSlide(currentSlideIndex);
-  }
-
-  document.addEventListener('keydown', e => move(e.key));
-</script>
+  </script>
 </body>
 </html>
