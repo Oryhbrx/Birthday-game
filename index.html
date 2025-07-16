@@ -70,6 +70,13 @@
     <button id="replayBtn" onclick="location.reload()">🔁 Play Again</button>
     <button id="musicBtn" onclick="toggleMusic()">🔊 Toggle Music</button>
   </div>
+  
+  <div class="controls" style="margin-top: 20px;">
+  <button onclick="movePlayer(0, -1)">⬆️</button><br>
+  <button onclick="movePlayer(-1, 0)">⬅️</button>
+  <button onclick="movePlayer(1, 0)">➡️</button><br>
+  <button onclick="movePlayer(0, 1)">⬇️</button>
+</div>
 
   <div class="slideshow" id="slideshow">
     <img src="photo1.png"/>
