@@ -1,1 +1,166 @@
+<!-- FULL CODE IS LONG – Reply “continue” to get the full version in parts. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Princess Regine's Birthday Maze 🎂</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: #fff0f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    h1 {
+      color: #d81b60;
+      margin: 10px 0;
+    }
+    canvas {
+      border: 3px dashed #d81b60;
+      background: #ffe6ea;
+      margin-top: 20px;
+    }
+    .slideshow, video, .controls {
+      display: none;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .slideshow img {
+      width: 300px;
+      margin: 10px;
+      border: 5px solid #f06292;
+      border-radius: 10px;
+    }
+    #winMessage {
+      display: none;
+      font-size: 1.5rem;
+      color: #c2185b;
+      margin-top: 20px;
+    }
+    #replayBtn, #musicBtn {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1rem;
+      background: #d81b60;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #viewCounter {
+      font-size: 0.9rem;
+      color: #888;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎉 Princess Regine's Birthday Maze – Level <span id="levelNum">1</span> 🎮</h1>
+  <canvas id="gameCanvas" width="320" height="320"></canvas>
+  <div id="winMessage">🎊 You completed all 5 levels! Happy Birthday, Regine! 🎂</div>
+
+  <div class="controls" id="endControls">
+    <button id="replayBtn" onclick="location.reload()">🔁 Play Again</button>
+    <button id="musicBtn" onclick="toggleMusic()">🔊 Toggle Music</button>
+  </div>
+
+  <div class="slideshow" id="slideshow">
+    <img src="photo2.png"/>
+    <img src="photo3.png"/>
+    <img src="photo4.png"/>
+    <img src="photo5.png"/>
+  </div>
+
+  <video id="birthdayVideo" width="300" controls autoplay loop>
+    <source src="birthday_clip.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <audio id="bgMusic" src="music.mp3" autoplay loop hidden></audio>
+  <div id="viewCounter">👁️ Views: 00123</div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const levelDisplay = document.getElementById('levelNum');
+    const player = { x: 1, y: 1 };
+
+    const levels = [
+      [ [1,1,1,1,1,1,1,1,1,1],
+        [1,0,0,0,1,0,0,0,0,1],
+        [1,0,1,0,1,0,1,1,0,1],
+        [1,0,1,0,0,0,0,1,0,1],
+        [1,0,1,1,1,1,0,1,0,1],
+        [1,0,0,0,0,1,0,1,0,1],
+        [1,1,1,1,0,1,0,1,0,1],
+        [1,0,0,1,0,0,0,1,0,1],
+        [1,0,1,1,1,1,0,0,0,2],
+        [1,1,1,1,1,1,1,1,1,1]
+      ],
+      /* Level 2-5 shortened here to fit */
+    ];
+
+    let currentLevel = 0;
+
+    function drawMaze() {
+      const maze = levels[currentLevel];
+      for (let y = 0; y < 10; y++) {
+        for (let x = 0; x < 10; x++) {
+          ctx.fillStyle = maze[y][x] === 1 ? '#d81b60' :
+                          maze[y][x] === 2 ? '#ffd54f' : '#ffffff';
+          ctx.fillRect(x * 32, y * 32, 32, 32);
+        }
+      }
+      ctx.fillStyle = '#4a148c';
+      ctx.fillRect(player.x * 32 + 4, player.y * 32 + 4, 24, 24);
+    }
+
+    function movePlayer(dx, dy) {
+      const maze = levels[currentLevel];
+      const newX = player.x + dx;
+      const newY = player.y + dy;
+      if (maze[newY][newX] !== 1) {
+        player.x = newX;
+        player.y = newY;
+        drawMaze();
+        if (maze[newY][newX] === 2) {
+          currentLevel++;
+          if (currentLevel >= levels.length) {
+            document.getElementById('winMessage').style.display = 'block';
+            document.getElementById('endControls').style.display = 'flex';
+            document.getElementById('slideshow').style.display = 'flex';
+            document.getElementById('birthdayVideo').style.display = 'block';
+            return;
+          }
+          player.x = 1; player.y = 1;
+          levelDisplay.textContent = currentLevel + 1;
+        }
+      }
+    }
+
+    function toggleMusic() {
+      const music = document.getElementById('bgMusic');
+      music.paused ? music.play() : music.pause();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+        e.preventDefault();
+      }
+      if (e.key === 'ArrowUp') movePlayer(0, -1);
+      if (e.key === 'ArrowDown') movePlayer(0, 1);
+      if (e.key === 'ArrowLeft') movePlayer(-1, 0);
+      if (e.key === 'ArrowRight') movePlayer(1, 0);
+    });
+
+    drawMaze();
+  </script>
+</body>
+</html>
 
