@@ -3,86 +3,125 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Princess Regine's Pixel Maze 🎂</title>
+  <title>Princess Regine's Birthday Maze 🎂</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #fdf1f1;
+      font-family: 'Segoe UI', sans-serif;
+      background: #fff0f5;
       display: flex;
       flex-direction: column;
       align-items: center;
       padding: 20px;
     }
     h1 {
+      color: #d81b60;
       margin: 10px 0;
-      color: #e91e63;
-      font-size: 2rem;
-      text-align: center;
     }
     canvas {
-      border: 4px dashed #e91e63;
-      margin: 20px 0;
-      max-width: 100%;
-      height: auto;
+      border: 3px dashed #d81b60;
+      background: #ffe6ea;
+      margin-top: 20px;
     }
-    .controls {
-      display: flex;
+    .slideshow {
+      display: none;
+      margin-top: 20px;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 10px;
     }
-    button, .ctrl-btn {
-      padding: 12px 20px;
-      font-size: 1rem;
-      background-color: #e91e63;
-      color: white;
-      border: none;
+    .slideshow img {
+      width: 300px;
+      margin: 10px;
+      border: 5px solid #f06292;
       border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
     }
-    button:hover, .ctrl-btn:hover {
-      background-color: #c2185b;
-    }
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.5rem;
-      }
-      button, .ctrl-btn {
-        padding: 10px 16px;
-        font-size: 0.9rem;
-      }
+    #winMessage {
+      display: none;
+      font-size: 1.5rem;
+      color: #c2185b;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>🎉 Welcome to Princess Regine's Pixel Maze 🎮</h1>
-
-  <canvas id="mazeCanvas" width="600" height="400"></canvas>
-
-  <div class="controls">
-    <button onclick="startGame()">Start</button>
-    <button onclick="resetGame()">Reset</button>
+  <h1>🎉 Help Princess Regine Escape the Maze! 🎮</h1>
+  <canvas id="gameCanvas" width="320" height="320"></canvas>
+  <div id="winMessage">🎊 You escaped the maze! Happy Birthday, Regine! 🎂</div>
+  <div class="slideshow" id="slideshow">
+    <img src="photo2.png" alt="Photo 1"/>
+    <img src="photo3.png" alt="Photo 2"/>
+    <img src="photo4.png" alt="Photo 3"/>
+    <img src="photo5.png" alt="Photo 4"/>
   </div>
 
   <script>
-    // Placeholder canvas logic
-    const canvas = document.getElementById('mazeCanvas');
+    const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = "#ffe0e0";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#e91e63";
-    ctx.font = "24px monospace";
-    ctx.fillText("Maze Game Coming Soon!", 150, 200);
 
-    function startGame() {
-      alert("Game will start here!");
+    const tileSize = 32;
+    const rows = 10;
+    const cols = 10;
+
+    const maze = [
+      [1,1,1,1,1,1,1,1,1,1],
+      [1,0,0,0,1,0,0,0,0,1],
+      [1,0,1,0,1,0,1,1,0,1],
+      [1,0,1,0,0,0,0,1,0,1],
+      [1,0,1,1,1,1,0,1,0,1],
+      [1,0,0,0,0,1,0,1,0,1],
+      [1,1,1,1,0,1,0,1,0,1],
+      [1,0,0,1,0,0,0,1,0,1],
+      [1,0,1,1,1,1,0,0,0,2],
+      [1,1,1,1,1,1,1,1,1,1]
+    ];
+
+    const player = { x: 1, y: 1 };
+
+    function drawMaze() {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (maze[y][x] === 1) {
+            ctx.fillStyle = '#d81b60'; // Wall
+          } else if (maze[y][x] === 2) {
+            ctx.fillStyle = '#ffd54f'; // Goal
+          } else {
+            ctx.fillStyle = '#ffffff'; // Path
+          }
+          ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+        }
+      }
+
+      // Draw player
+      ctx.fillStyle = '#4a148c';
+      ctx.fillRect(player.x * tileSize + 4, player.y * tileSize + 4, tileSize - 8, tileSize - 8);
     }
 
-    function resetGame() {
-      alert("Game will reset here!");
+    function movePlayer(dx, dy) {
+      const newX = player.x + dx;
+      const newY = player.y + dy;
+
+      if (maze[newY][newX] !== 1) {
+        player.x = newX;
+        player.y = newY;
+        drawMaze();
+
+        if (maze[newY][newX] === 2) {
+          document.getElementById('winMessage').style.display = 'block';
+          document.getElementById('slideshow').style.display = 'flex';
+        }
+      }
     }
+
+    document.addEventListener('keydown', (e) => {
+      switch (e.key) {
+        case 'ArrowUp': movePlayer(0, -1); break;
+        case 'ArrowDown': movePlayer(0, 1); break;
+        case 'ArrowLeft': movePlayer(-1, 0); break;
+        case 'ArrowRight': movePlayer(1, 0); break;
+      }
+    });
+
+    drawMaze();
   </script>
 </body>
 </html>
