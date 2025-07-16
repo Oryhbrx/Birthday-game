@@ -62,7 +62,7 @@
 </head>
 <body>
   <h1>🎉 Princess Regine's Birthday Maze – Level <span id="levelNum">1</span> 🎮</h1>
-  <canvas id="gameCanvas" width="640" height="640"></canvas>
+  <canvas id="gameCanvas" width="672" height="640"></canvas>
   <div id="winMessage">🎊 You completed all 5 levels! Happy Birthday, Regine! 🎂</div>
 <img src="https://hitwebcounter.com/counter/counter.php?page=1234567&style=0036&nbdigits=5" title="Web Counter" Alt="web counter" border="0" />
 
@@ -169,7 +169,10 @@ const levels = [
 
 function drawMaze() {
   const maze = levels[currentLevel];
+  canvas.width = maze[0].length * 32;
+  canvas.height = maze.length * 32;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   for (let y = 0; y < maze.length; y++) {
     for (let x = 0; x < maze[y].length; x++) {
       ctx.fillStyle = maze[y][x] === 1 ? '#d81b60' :
@@ -177,6 +180,7 @@ function drawMaze() {
       ctx.fillRect(x * 32, y * 32, 32, 32);
     }
   }
+
   ctx.fillStyle = '#4a148c';
   ctx.fillRect(player.x * 32 + 4, player.y * 32 + 4, 24, 24);
 }
