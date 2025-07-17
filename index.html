@@ -57,7 +57,6 @@
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-
     const tileSize = 32;
     const rows = 10;
     const cols = 10;
@@ -66,9 +65,9 @@
       [1,1,1,1,1,1,1,1,1,1],
       [1,0,0,0,1,0,0,0,0,1],
       [1,0,1,0,1,0,1,1,0,1],
-      [1,0,1,0,0,0,0,1,0,1],
+      [1,0,1,3,0,3,0,1,0,1],
       [1,0,1,1,1,1,0,1,0,1],
-      [1,0,0,0,0,1,0,1,0,1],
+      [1,0,3,0,0,1,0,1,0,1],
       [1,1,1,1,0,1,0,1,0,1],
       [1,0,0,1,0,0,0,1,0,1],
       [1,0,1,1,1,1,0,0,0,2],
@@ -76,22 +75,21 @@
     ];
 
     const player = { x: 1, y: 1 };
+    let prankWallToggle = 0;
 
     function drawMaze() {
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-          if (maze[y][x] === 1) {
-            ctx.fillStyle = '#d81b60'; // Wall
-          } else if (maze[y][x] === 2) {
-            ctx.fillStyle = '#ffd54f'; // Goal
-          } else {
-            ctx.fillStyle = '#ffffff'; // Path
+          switch (maze[y][x]) {
+            case 1: ctx.fillStyle = '#d81b60'; break; // Wall
+            case 2: ctx.fillStyle = '#ffd54f'; break; // Goal
+            case 3: ctx.fillStyle = '#f8bbd0'; break; // Trap
+            default: ctx.fillStyle = '#ffffff'; break; // Path
           }
           ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
       }
 
-      // Draw player
       ctx.fillStyle = '#4a148c';
       ctx.fillRect(player.x * tileSize + 4, player.y * tileSize + 4, tileSize - 8, tileSize - 8);
     }
@@ -103,6 +101,23 @@
       if (maze[newY][newX] !== 1) {
         player.x = newX;
         player.y = newY;
+        prankWallToggle++;
+
+        // 💣 Trap detection
+        if (maze[newY][newX] === 3) {
+          alert("😱 Naloko ka! Teleporting Regine back to the start...");
+          player.x = 1;
+          player.y = 1;
+        }
+
+        // 🎭 Prank wall toggling every 4 moves
+        if (prankWallToggle % 4 === 0) {
+          const px = Math.floor(Math.random() * cols);
+          const py = Math.floor(Math.random() * rows);
+          if (maze[py][px] === 0) maze[py][px] = 1;
+          else if (maze[py][px] === 1) maze[py][px] = 0;
+        }
+
         drawMaze();
 
         if (maze[newY][newX] === 2) {
