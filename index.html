@@ -137,7 +137,7 @@
       [1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,1,0,1],
       [1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1],
       [1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,1,0,1],
-      [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,5,1],
+      [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1],
       [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,2,1],
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
     ]];
@@ -145,23 +145,25 @@
     let maze = JSON.parse(JSON.stringify(levels[level]));
     const player = { x: 1, y: 1 };
 
-    function drawMaze() {
-      for (let y = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++) {
-          switch (maze[y][x]) {
-            case 1: ctx.fillStyle = '#d81b60'; break;
-            case 2: ctx.fillStyle = '#ffd54f'; break;
-            case 3: ctx.fillStyle = '#f8bbd0'; break;
-            case 4: ctx.fillStyle = '#fff0f5'; break;
-            case 5: ctx.fillStyle = '#fff0f5'; break;
-            default: ctx.fillStyle = '#ffffff'; break;
-          }
-          ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-        }
+function drawMaze() {
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const tile = maze[y][x];
+      if (tile === 4 || tile === 5) continue; // Skip drawing invisible tiles
+
+      switch (tile) {
+        case 1: ctx.fillStyle = '#d81b60'; break;
+        case 2: ctx.fillStyle = '#ffd54f'; break;
+        case 3: ctx.fillStyle = '#f8bbd0'; break;
+        default: ctx.fillStyle = '#ffffff'; break;
       }
-      // Draw princess sprite
-      ctx.drawImage(princess, player.x * tileSize, player.y * tileSize, tileSize, tileSize);
+      ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
     }
+  }
+
+  // Draw Princess sprite
+  ctx.drawImage(princess, player.x * tileSize, player.y * tileSize, tileSize, tileSize);
+}
 
     function findAnotherTeleportSpot(x, y) {
       for (let r = 0; r < rows; r++) {
