@@ -146,22 +146,27 @@
     const player = { x: 1, y: 1 };
 
 function drawMaze() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height); // 💥 Clear everything first
+
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       const tile = maze[y][x];
-      if (tile === 4 || tile === 5) continue; // Skip drawing invisible tiles
+
+      // Skip drawing invisible tiles (4 & 5)
+      if (tile === 4 || tile === 5) continue;
 
       switch (tile) {
-        case 1: ctx.fillStyle = '#d81b60'; break;
-        case 2: ctx.fillStyle = '#ffd54f'; break;
-        case 3: ctx.fillStyle = '#f8bbd0'; break;
-        default: ctx.fillStyle = '#ffffff'; break;
+        case 1: ctx.fillStyle = '#d81b60'; break; // wall
+        case 2: ctx.fillStyle = '#ffd54f'; break; // goal
+        case 3: ctx.fillStyle = '#f8bbd0'; break; // teleport
+        default: ctx.fillStyle = '#ffffff'; break; // path
       }
+
       ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
     }
   }
 
-  // Draw Princess sprite
+  // 👸 Draw Princess sprite
   ctx.drawImage(princess, player.x * tileSize, player.y * tileSize, tileSize, tileSize);
 }
 
