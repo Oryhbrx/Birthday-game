@@ -41,11 +41,21 @@
       color: #c2185b;
       margin-top: 20px;
     }
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      background: #d81b60;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
   <h1>🎉 Help Princess Regine Escape the Maze! 🎮</h1>
-  <canvas id="gameCanvas" width="320" height="320"></canvas>
+  <canvas id="gameCanvas" width="640" height="640"></canvas>
   <div id="winMessage">🎊 You escaped the maze! Happy Birthday, Regine! 🎂</div>
   <div class="slideshow" id="slideshow">
     <img src="photo2.png" alt="Photo 1"/>
@@ -53,77 +63,151 @@
     <img src="photo4.png" alt="Photo 3"/>
     <img src="photo5.png" alt="Photo 4"/>
   </div>
+  <button onclick="nextLevel()">Next Level</button>
 
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const tileSize = 32;
-    const rows = 10;
-    const cols = 10;
+    const rows = 20;
+    const cols = 20;
+    let level = 0;
+    let prankCounter = 0;
 
-    const maze = [
-      [1,1,1,1,1,1,1,1,1,1],
-      [1,0,0,0,1,0,0,0,0,1],
-      [1,0,1,0,1,0,1,1,0,1],
-      [1,0,1,3,0,3,0,1,0,1],
-      [1,0,1,1,1,1,0,1,0,1],
-      [1,0,3,0,0,1,0,1,0,1],
-      [1,1,1,1,0,1,0,1,0,1],
-      [1,0,0,1,0,0,0,1,0,1],
-      [1,0,1,1,1,1,0,0,0,2],
-      [1,1,1,1,1,1,1,1,1,1]
+    const levels = [
+      // Level 1: Start simple
+      (() => {
+        const grid = Array.from({ length: 20 }, (_, y) =>
+          Array.from({ length: 20 }, (_, x) => (x === 0 || y === 0 || x === 19 || y === 19) ? 1 : 0)
+        );
+        grid[1][1] = 0;
+        grid[18][18] = 2;
+        grid[10][10] = 3;
+        grid[4][15] = 3;
+        return grid;
+      })(),
+
+      // Level 2: Zigzag
+      (() => {
+        const grid = Array.from({ length: 20 }, () => Array(20).fill(1));
+        for (let i = 1; i < 19; i++) grid[i][i % 2 === 0 ? i : 19 - i] = 0;
+        grid[1][1] = 0;
+        grid[18][18] = 2;
+        return grid;
+      })(),
+
+      // Level 3: Spiral
+      (() => {
+        const grid = Array.from({ length: 20 }, () => Array(20).fill(1));
+        for (let i = 1; i < 19; i++) grid[1][i] = 0;
+        for (let i = 1; i < 19; i++) grid[i][18] = 0;
+        for (let i = 18; i > 1; i--) grid[18][i] = 0;
+        for (let i = 18; i > 2; i--) grid[i][1] = 0;
+        for (let i = 1; i < 17; i++) grid[3][i] = 0;
+        for (let i = 3; i < 17; i++) grid[i][16] = 0;
+        for (let i = 16; i > 3; i--) grid[16][i] = 0;
+        grid[10][10] = 2;
+        grid[5][5] = 3;
+        grid[14][14] = 3;
+        grid[1][1] = 0;
+        return grid;
+      })()
     ];
 
+    let maze = JSON.parse(JSON.stringify(levels[level]));
     const player = { x: 1, y: 1 };
-    let prankWallToggle = 0;
 
     function drawMaze() {
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           switch (maze[y][x]) {
-            case 1: ctx.fillStyle = '#d81b60'; break; // Wall
-            case 2: ctx.fillStyle = '#ffd54f'; break; // Goal
-            case 3: ctx.fillStyle = '#f8bbd0'; break; // Trap
-            default: ctx.fillStyle = '#ffffff'; break; // Path
+            case 1: ctx.fillStyle = '#d81b60'; break;
+            case 2: ctx.fillStyle = '#ffd54f'; break;
+            case 3: ctx.fillStyle = '#f8bbd0'; break;
+            default: ctx.fillStyle = '#ffffff'; break;
           }
           ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
       }
-
       ctx.fillStyle = '#4a148c';
-      ctx.fillRect(player.x * tileSize + 4, player.y * tileSize + 4, tileSize - 8, tileSize - 8);
+      ctx.beginPath();
+      ctx.arc(player.x * tileSize + tileSize/2, player.y * tileSize + tileSize/2, tileSize/3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function findAnotherTeleportSpot(x, y) {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if ((r !== y || c !== x) && maze[r][c] === 3) {
+            return { x: c, y: r };
+          }
+        }
+      }
+      return null;
     }
 
     function movePlayer(dx, dy) {
       const newX = player.x + dx;
       const newY = player.y + dy;
 
-      if (maze[newY][newX] !== 1) {
-        player.x = newX;
-        player.y = newY;
-        prankWallToggle++;
+      if (
+        newX >= 0 && newY >= 0 &&
+        newX < cols && newY < rows &&
+        maze[newY][newX] !== 1
+      ) {
+        prankCounter++;
 
-        // 💣 Trap detection
-        if (maze[newY][newX] === 3) {
-          alert("😱 Naloko ka! Teleporting Regine back to the start...");
-          player.x = 1;
-          player.y = 1;
+        if (level === 0 && prankCounter % 5 === 0) {
+          const px = player.x + dx * 2;
+          const py = player.y + dy * 2;
+          if (
+            px >= 0 && py >= 0 &&
+            px < cols && py < rows &&
+            maze[py][px] === 0
+          ) {
+            maze[py][px] = 1;
+            alert("😜 A wall suddenly appeared!");
+          }
         }
 
-        // 🎭 Prank wall toggling every 4 moves
-        if (prankWallToggle % 4 === 0) {
-          const px = Math.floor(Math.random() * cols);
-          const py = Math.floor(Math.random() * rows);
-          if (maze[py][px] === 0) maze[py][px] = 1;
-          else if (maze[py][px] === 1) maze[py][px] = 0;
+        player.x = newX;
+        player.y = newY;
+
+        if (maze[newY][newX] === 3) {
+          const target = findAnotherTeleportSpot(newX, newY);
+          if (target) {
+            alert("✨ Teleport activated!");
+            player.x = target.x;
+            player.y = target.y;
+          }
         }
 
         drawMaze();
 
-        if (maze[newY][newX] === 2) {
-          document.getElementById('winMessage').style.display = 'block';
-          document.getElementById('slideshow').style.display = 'flex';
+        if (maze[player.y][player.x] === 2) {
+          if (level === levels.length - 1) {
+            document.getElementById('winMessage').style.display = 'block';
+            document.getElementById('slideshow').style.display = 'flex';
+          } else {
+            level++;
+            maze = JSON.parse(JSON.stringify(levels[level]));
+            player.x = 1;
+            player.y = 1;
+            prankCounter = 0;
+            drawMaze();
+          }
         }
+      }
+    }
+
+    function nextLevel() {
+      if (level < levels.length - 1) {
+        level++;
+        maze = JSON.parse(JSON.stringify(levels[level]));
+        player.x = 1;
+        player.y = 1;
+        prankCounter = 0;
+        drawMaze();
       }
     }
 
