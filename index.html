@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Princess Regine's Birthday Maze 🎂</title>
   <style>
     body {
@@ -13,15 +14,18 @@
       flex-direction: column;
       align-items: center;
       padding: 20px;
+      touch-action: manipulation;
     }
     h1 {
       color: #d81b60;
       margin: 10px 0;
+      text-align: center;
     }
     canvas {
       border: 3px dashed #d81b60;
       background: #ffe6ea;
       margin-top: 20px;
+      touch-action: none;
     }
     .controls {
       display: flex;
@@ -30,15 +34,22 @@
       flex-wrap: wrap;
     }
     .controls button {
-      margin: 5px;
-      padding: 15px 20px;
-      font-size: 16px;
+      margin: 10px;
+      padding: 20px 25px;
+      font-size: 24px;
       background-color: #d81b60;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       font-weight: bold;
       cursor: pointer;
+      min-width: 70px;
+    }
+    @media (max-width: 480px) {
+      .controls button {
+        padding: 25px;
+        font-size: 28px;
+      }
     }
     .slideshow {
       display: none;
@@ -60,12 +71,13 @@
     }
     button.next {
       margin: 10px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       background: #d81b60;
       color: white;
       border: none;
       border-radius: 8px;
       font-weight: bold;
+      font-size: 18px;
       cursor: pointer;
     }
   </style>
@@ -73,15 +85,15 @@
 <body>
   <h1>🎉 Help Princess Regine Escape the Maze! 🎮</h1>
   <canvas id="gameCanvas" width="640" height="640"></canvas>
-  
-  <div class="controls">
+
+  <div class="controls" id="control-up">
     <button onmousedown="startMove(0, -1)" onmouseup="stopMove()" ontouchstart="startMove(0, -1)" ontouchend="stopMove()">⬆️</button>
   </div>
-  <div class="controls">
+  <div class="controls" id="control-sides">
     <button onmousedown="startMove(-1, 0)" onmouseup="stopMove()" ontouchstart="startMove(-1, 0)" ontouchend="stopMove()">⬅️</button>
     <button onmousedown="startMove(1, 0)" onmouseup="stopMove()" ontouchstart="startMove(1, 0)" ontouchend="stopMove()">➡️</button>
   </div>
-  <div class="controls">
+  <div class="controls" id="control-down">
     <button onmousedown="startMove(0, 1)" onmouseup="stopMove()" ontouchstart="startMove(0, 1)" ontouchend="stopMove()">⬇️</button>
   </div>
 
@@ -102,6 +114,9 @@
     const cols = 20;
     let level = 0;
     let moveInterval;
+
+    const princessImg = new Image();
+    princessImg.src = 'princess.png';
 
     const levels = [[
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -133,20 +148,17 @@
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           switch (maze[y][x]) {
-            case 1: ctx.fillStyle = '#d81b60'; break;  // Wall
-            case 2: ctx.fillStyle = '#ffd54f'; break;  // Goal
-            case 3: ctx.fillStyle = '#f8bbd0'; break;  // Teleport
-            case 4: ctx.fillStyle = '#fff0f5'; break;  // Appearing wall trigger
-            case 5: ctx.fillStyle = '#ffe6ea'; break;  // Hidden trap (return to start)
-            default: ctx.fillStyle = '#ffffff'; break; // Path
+            case 1: ctx.fillStyle = '#d81b60'; break;
+            case 2: ctx.fillStyle = '#ffd54f'; break;
+            case 3: ctx.fillStyle = '#f8bbd0'; break;
+            case 4: ctx.fillStyle = '#fff0f5'; break;
+            case 5: ctx.fillStyle = '#ffe6ea'; break;
+            default: ctx.fillStyle = '#ffffff'; break;
           }
           ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
       }
-      ctx.fillStyle = '#4a148c';
-      ctx.beginPath();
-      ctx.arc(player.x * tileSize + tileSize / 2, player.y * tileSize + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.drawImage(princessImg, player.x * tileSize, player.y * tileSize, tileSize, tileSize);
     }
 
     function findAnotherTeleportSpot(x, y) {
@@ -192,6 +204,9 @@
         if (maze[player.y][player.x] === 2) {
           document.getElementById('winMessage').style.display = 'block';
           document.getElementById('slideshow').style.display = 'flex';
+          document.getElementById('control-up').style.display = 'none';
+          document.getElementById('control-sides').style.display = 'none';
+          document.getElementById('control-down').style.display = 'none';
         }
       }
     }
@@ -224,7 +239,7 @@
       }
     });
 
-    drawMaze();
+    princessImg.onload = drawMaze;
   </script>
 </body>
 </html>
