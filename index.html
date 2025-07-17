@@ -75,12 +75,11 @@
     let prankCounter = 0;
 
     const levels = [
-      [
         [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
         [1,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,2,1],
         [1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1],
         [1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,4,1,4,1],
-        [1,0,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
+        [1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
         [1,0,0,0,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
         [1,1,1,1,1,0,1,0,0,1,0,1,0,1,0,1,0,1,0,1],
         [1,0,0,0,0,0,1,0,1,1,0,1,0,1,0,1,0,1,0,1],
@@ -88,7 +87,7 @@
         [1,0,1,3,1,0,0,0,1,0,1,1,0,1,1,0,1,1,0,1],
         [1,0,1,0,1,0,1,1,1,0,0,0,0,0,1,0,1,1,0,1],
         [1,0,1,0,1,0,1,0,0,0,1,0,1,1,1,0,1,1,0,1],
-        [1,0,1,0,1,0,1,0,1,1,1,1,0,0,1,0,0,1,0,1],
+        [1,0,1,0,1,0,1,0,1,1,1,1,1,0,1,0,0,1,0,1],
         [1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,1,0,1,0,1],
         [1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,1,0,1],
         [1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1],
@@ -106,10 +105,10 @@
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           switch (maze[y][x]) {
-            case 1: ctx.fillStyle = '#d81b60'; break;
-            case 2: ctx.fillStyle = '#ffd54f'; break;
-            case 3: ctx.fillStyle = '#f8bbd0'; break;
-            case 4: ctx.fillStyle = '#fff0f5'; break;
+            case 1: ctx.fillStyle = '#d81b60'; break;       // wall
+            case 2: ctx.fillStyle = '#ffd54f'; break;       // goal
+            case 3: ctx.fillStyle = '#f8bbd0'; break;       // teleport
+            case 4: ctx.fillStyle = '#fff0f5'; break;       // hidden trap
             default: ctx.fillStyle = '#ffffff'; break;
           }
           ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
@@ -117,7 +116,7 @@
       }
       ctx.fillStyle = '#4a148c';
       ctx.beginPath();
-      ctx.arc(player.x * tileSize + tileSize / 2, player.y * tileSize + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+      ctx.arc(player.x * tileSize + tileSize/2, player.y * tileSize + tileSize/2, tileSize/3, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -143,6 +142,7 @@
       ) {
         prankCounter++;
 
+        // Step on prank wall tile (hidden trap)
         if (maze[newY][newX] === 4) {
           const px = newX + dx;
           const py = newY + dy;
@@ -152,7 +152,6 @@
             maze[py][px] === 0
           ) {
             maze[py][px] = 1;
-            alert("😜 A wall suddenly appeared!");
           }
         }
 
@@ -162,7 +161,6 @@
         if (maze[newY][newX] === 3) {
           const target = findAnotherTeleportSpot(newX, newY);
           if (target) {
-            alert("✨ Teleport activated!");
             player.x = target.x;
             player.y = target.y;
           }
