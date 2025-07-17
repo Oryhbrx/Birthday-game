@@ -145,29 +145,23 @@
     let maze = JSON.parse(JSON.stringify(levels[level]));
     const player = { x: 1, y: 1 };
 
-function drawMaze() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // 💥 Clear everything first
+ctx.clearRect(0, 0, canvas.width, canvas.height); // 💥 Clear everything first
 
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      const tile = maze[y][x];
+for (let y = 0; y < rows; y++) {
+  for (let x = 0; x < cols; x++) {
+    const tile = maze[y][x];
 
-      // Skip drawing invisible tiles (4 & 5)
-      if (tile === 4 || tile === 5) continue;
+    if (tile === 4 || tile === 5) continue; // ❌ Skip invisible trap tiles
 
-      switch (tile) {
-        case 1: ctx.fillStyle = '#ffffff'; break; // wall
-        case 2: ctx.fillStyle = '#ffd54f'; break; // goal
-        case 3: ctx.fillStyle = '#ffffff'; break; // teleport
-        default: ctx.fillStyle = '#ffffff'; break; // path
-      }
-
-      ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+    switch (tile) {
+      case 1: ctx.fillStyle = '#d81b60'; break; // 💗 wall (pink)
+      case 2: ctx.fillStyle = '#ffd54f'; break; // ⭐ finish line (yellow)
+      case 3: ctx.fillStyle = '#f8bbd0'; break; // 🎀 teleport (light pink)
+      default: ctx.fillStyle = '#ffffff'; break; // 🟦 walkable path
     }
-  }
 
-  // 👸 Draw Princess sprite
-  ctx.drawImage(princess, player.x * tileSize, player.y * tileSize, tileSize, tileSize);
+    ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+  }
 }
 
     function findAnotherTeleportSpot(x, y) {
