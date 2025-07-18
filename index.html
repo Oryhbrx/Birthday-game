@@ -19,39 +19,59 @@
     }
     h1 {
       color: #d81b60;
-      margin: 10px 0;
       text-align: center;
+      margin: 10px;
     }
     #levelHint {
-      margin: 10px 0;
-      font-size: 1.1em;
       color: #c2185b;
+      font-size: 1.1rem;
       text-align: center;
+      margin-bottom: 10px;
     }
     canvas {
       border: 3px solid #d81b60;
       background: #ffffff;
-      margin-top: 10px;
       touch-action: none;
     }
-    .slideshow {
+    #rewardPopup {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(255, 240, 245, 0.95);
       display: none;
-      margin-top: 20px;
-      flex-wrap: wrap;
+      flex-direction: column;
       justify-content: center;
+      align-items: center;
+      z-index: 9999;
     }
-    .slideshow img {
-      width: 300px;
-      margin: 10px;
+    #rewardPopup img {
+      width: 90%;
+      max-width: 500px;
       border: 5px solid #f06292;
-      border-radius: 10px;
+      border-radius: 12px;
+    }
+    .navArrows {
+      display: flex;
+      justify-content: space-between;
+      width: 90%;
+      max-width: 500px;
+      margin-top: 15px;
+    }
+    .navArrows button {
+      font-size: 1.5rem;
+      background: #d81b60;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
     }
     #winMessage {
-      display: none;
-      font-size: 1.5rem;
+      font-size: 1.3rem;
       color: #c2185b;
-      margin-top: 20px;
-      text-align: center;
+      margin-top: 10px;
+      display: none;
     }
   </style>
 </head>
@@ -60,16 +80,17 @@
   <div id="levelHint"></div>
   <canvas id="gameCanvas" width="640" height="640"></canvas>
 
-  <!-- Win Message and Slideshow -->
   <div id="winMessage">🎊 You escaped the maze! Happy Birthday, Regine! 🎂</div>
-  <div class="slideshow" id="slideshow">
-    <img src="photo1.png" alt="Photo 1"/>
-    <img src="photo2.png" alt="Photo 2"/>
-    <img src="photo3.png" alt="Photo 3"/>
-    <img src="photo4.png" alt="Photo 4"/>
+
+  <!-- Reward Popup -->
+  <div id="rewardPopup">
+    <img id="rewardImage" src="photo2.png" alt="Reward Image" />
+    <div class="navArrows">
+      <button onclick="prevImage()">⬅ Prev</button>
+      <button onclick="nextImage()">Next ➡</button>
+    </div>
   </div>
 
-  <!-- Princess Sprite -->
   <img id="princess" src="princess.png" style="display:none;" />
 
   <script>
@@ -77,11 +98,24 @@
     const ctx = canvas.getContext('2d');
     const princess = document.getElementById('princess');
     const tileSize = 32;
-    const rows = 20;
-    const cols = 20;
+    const rows = 20, cols = 20;
     let level = 0;
 
-    const levels = [
+    const hints = [
+      "A gentle start. Learn the path and spot the yellow exit. Adventure begins!",
+      "Things get deeper. Hidden resets and paths await—don't get sent back!",
+      "Invisible traps and tricky turns await. Watch your steps—and your memory!"
+    ];
+
+    const rewardImages = ['photo2.png', 'photo3.png', 'photo4.png', 'photo5.png'];
+    let currentRewardIndex = 0;
+
+    const player = { x: 1, y: 1 };
+
+    const rewardPopup = document.getElementById("rewardPopup");
+    const rewardImage = document.getElementById("rewardImage");
+
+       const levels = [
     [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,2,1],
@@ -148,10 +182,12 @@
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]
 ]
-  ];
-
+  ]; 
     let maze = JSON.parse(JSON.stringify(levels[level]));
-    const player = { x: 1, y: 1 };
+
+    function updateLevelHint() {
+      document.getElementById("levelHint").textContent = hints[level] || "";
+    }
 
     function drawMaze() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -182,65 +218,55 @@
       return null;
     }
 
-    function updateLevelHint() {
-      const hints = [
-        "A gentle start. Learn the path and spot the yellow exit. Adventure begins!",
-        "Things get deeper. Hidden resets and paths await—don't get sent back!",
-        "Invisible traps and tricky turns await. Watch your steps—and your memory!"
-      ];
-      document.getElementById("levelHint").textContent = hints[level] || "";
-    }
-
     function movePlayer(dx, dy) {
       const newX = player.x + dx;
       const newY = player.y + dy;
-      if (
-        newX >= 0 && newY >= 0 &&
-        newX < cols && newY < rows &&
-        maze[newY][newX] !== 1
-      ) {
+      if (newX >= 0 && newY >= 0 && newX < cols && newY < rows && maze[newY][newX] !== 1) {
         if (maze[newY][newX] === 4) {
-          const px = newX + dx;
-          const py = newY + dy;
-          if (
-            px >= 0 && py >= 0 &&
-            px < cols && py < rows &&
-            maze[py][px] === 0
-          ) {
+          const px = newX + dx, py = newY + dy;
+          if (px >= 0 && py >= 0 && px < cols && py < rows && maze[py][px] === 0) {
             maze[py][px] = 1;
           }
         }
-
-        player.x = newX;
-        player.y = newY;
+        player.x = newX; player.y = newY;
 
         if (maze[newY][newX] === 3) {
-          const target = findAnotherTeleportSpot(newX, newY);
-          if (target) {
-            player.x = target.x;
-            player.y = target.y;
-          }
+          const tp = findAnotherTeleportSpot(newX, newY);
+          if (tp) { player.x = tp.x; player.y = tp.y; }
         } else if (maze[newY][newX] === 5) {
-          player.x = 1;
-          player.y = 1;
+          player.x = 1; player.y = 1;
         }
 
         drawMaze();
 
         if (maze[player.y][player.x] === 2) {
           if (level === levels.length - 1) {
-            document.getElementById('winMessage').style.display = 'block';
-            document.getElementById('slideshow').style.display = 'flex';
+            showRewardPopup();
           } else {
             level++;
             maze = JSON.parse(JSON.stringify(levels[level]));
-            player.x = 1;
-            player.y = 1;
+            player.x = 1; player.y = 1;
             updateLevelHint();
             drawMaze();
           }
         }
       }
+    }
+
+    function showRewardPopup() {
+      document.getElementById('winMessage').style.display = 'block';
+      rewardPopup.style.display = 'flex';
+      rewardImage.src = rewardImages[currentRewardIndex];
+    }
+
+    function nextImage() {
+      currentRewardIndex = (currentRewardIndex + 1) % rewardImages.length;
+      rewardImage.src = rewardImages[currentRewardIndex];
+    }
+
+    function prevImage() {
+      currentRewardIndex = (currentRewardIndex - 1 + rewardImages.length) % rewardImages.length;
+      rewardImage.src = rewardImages[currentRewardIndex];
     }
 
     document.addEventListener('keydown', (e) => {
@@ -252,15 +278,13 @@
       }
     });
 
-    let touchStartX = 0;
-    let touchStartY = 0;
-    canvas.addEventListener('touchstart', (e) => {
+    let touchStartX = 0, touchStartY = 0;
+    canvas.addEventListener('touchstart', e => {
       const touch = e.touches[0];
       touchStartX = touch.clientX;
       touchStartY = touch.clientY;
     });
-
-    canvas.addEventListener('touchend', (e) => {
+    canvas.addEventListener('touchend', e => {
       const dx = e.changedTouches[0].clientX - touchStartX;
       const dy = e.changedTouches[0].clientY - touchStartY;
       if (Math.abs(dx) > Math.abs(dy)) {
