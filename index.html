@@ -68,6 +68,16 @@
       border-radius: 8px;
       cursor: pointer;
     }
+    #closeBtn {
+      margin-top: 10px;
+      background: #888;
+      color: white;
+      font-size: 1.1rem;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
     #winMessage {
       font-size: 1.3rem;
       color: #c2185b;
@@ -80,16 +90,15 @@
   <h1>🎉 Help Princess Regine Escape the Maze! 🎮</h1>
   <div id="levelHint"></div>
   <canvas id="gameCanvas" width="640" height="640"></canvas>
-
   <div id="winMessage">🎊 You escaped the maze! Happy Birthday, Regine! 🎂</div>
 
-  <!-- Reward Popup -->
   <div id="rewardPopup">
     <img id="rewardImage" src="photo2.png" alt="Reward Image" />
     <div class="navArrows">
       <button onclick="prevImage()">⬅ Prev</button>
       <button onclick="nextImage()">Next ➡</button>
     </div>
+    <button id="closeBtn" onclick="closeRewardPopup()">✖ Close</button>
   </div>
 
   <img id="princess" src="princess.png" style="display:none;" />
@@ -102,16 +111,14 @@
     const rows = 20, cols = 20;
     let level = 0;
 
-    const rewardPopup = document.getElementById('rewardPopup');
-    const rewardImage = document.getElementById('rewardImage');
-    const rewardImages = ['photo2.png', 'photo3.png', 'photo4.png', 'photo5.png'];
-    let currentRewardIndex = 0;
-
     const hints = [
       "A gentle start. Learn the path and spot the yellow exit. Adventure begins!",
       "Things get deeper. Hidden resets and paths await—don't get sent back!",
       "Invisible traps and tricky turns await. Watch your steps—and your memory!"
     ];
+
+    const rewardImages = ['photo2.png', 'photo3.png', 'photo4.png', 'photo5.png'];
+    let currentRewardIndex = 0;
 
     const player = { x: 1, y: 1 };
 
@@ -177,8 +184,8 @@
     [1,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,0,0,0,1],
     [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
     [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
-    [1,0,1,1,1,1,1,1,1,5,1,1,1,1,1,1,0,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,1],
+    [1,0,1,1,1,1,1,1,1,5,1,1,1,1,1,1,1,1,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,6,0,0,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]
 ]
@@ -194,7 +201,7 @@
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const tile = maze[y][x];
-          if (tile === 4 || tile === 5) continue;
+          if (tile === 4 || tile === 5 || tile === 6) continue;
           switch (tile) {
             case 1: ctx.fillStyle = '#d81b60'; break;
             case 2: ctx.fillStyle = '#ffd54f'; break;
@@ -228,24 +235,24 @@
             maze[py][px] = 1;
           }
         }
+
         player.x = newX;
         player.y = newY;
 
         if (maze[newY][newX] === 3) {
           const tp = findAnotherTeleportSpot(newX, newY);
-          if (tp) {
-            player.x = tp.x;
-            player.y = tp.y;
-          }
+          if (tp) { player.x = tp.x; player.y = tp.y; }
         } else if (maze[newY][newX] === 5) {
           player.x = 1; player.y = 1;
+        } else if (maze[newY][newX] === 6) {
+          // 💡 Example: open wall at (10, 15)
+          maze[10][15] = 0;
         }
 
         drawMaze();
 
         if (maze[player.y][player.x] === 2) {
           if (level === levels.length - 1) {
-            document.getElementById('winMessage').style.display = 'block';
             showRewardPopup();
           } else {
             level++;
@@ -259,24 +266,24 @@
     }
 
     function showRewardPopup() {
-      rewardPopup.style.display = 'flex';
-      rewardImage.src = rewardImages[currentRewardIndex];
+      document.getElementById('winMessage').style.display = 'block';
+      document.getElementById('rewardPopup').style.display = 'flex';
+      document.getElementById('rewardImage').src = rewardImages[currentRewardIndex];
+    }
+
+    function closeRewardPopup() {
+      document.getElementById('rewardPopup').style.display = 'none';
     }
 
     function nextImage() {
       currentRewardIndex = (currentRewardIndex + 1) % rewardImages.length;
-      rewardImage.src = rewardImages[currentRewardIndex];
+      document.getElementById('rewardImage').src = rewardImages[currentRewardIndex];
     }
 
     function prevImage() {
       currentRewardIndex = (currentRewardIndex - 1 + rewardImages.length) % rewardImages.length;
-      rewardImage.src = rewardImages[currentRewardIndex];
+      document.getElementById('rewardImage').src = rewardImages[currentRewardIndex];
     }
-
-    // Tap/click to hide reward popup
-    rewardPopup.addEventListener('click', () => {
-      rewardPopup.style.display = 'none';
-    });
 
     document.addEventListener('keydown', (e) => {
       switch (e.key) {
