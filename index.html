@@ -23,10 +23,9 @@
       text-align: center;
     }
     #levelHint {
-      font-size: 1.1rem;
-      margin: 5px;
-      color: #880e4f;
-      font-weight: bold;
+      margin: 10px 0;
+      font-size: 1.1em;
+      color: #c2185b;
       text-align: center;
     }
     canvas {
@@ -34,9 +33,6 @@
       background: #ffffff;
       margin-top: 10px;
       touch-action: none;
-    }
-    .controls {
-      display: none; /* hidden for mobile */
     }
     .slideshow {
       display: none;
@@ -57,16 +53,6 @@
       margin-top: 20px;
       text-align: center;
     }
-    button.next {
-      margin: 10px;
-      padding: 12px 24px;
-      background: #d81b60;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
@@ -82,7 +68,6 @@
     <img src="photo4.png" alt="Photo 3"/>
     <img src="photo5.png" alt="Photo 4"/>
   </div>
-  <button class="next" onclick="nextLevel()">Next Level</button>
 
   <!-- Princess Sprite -->
   <img id="princess" src="princess.png" style="display:none;" />
@@ -96,96 +81,17 @@
     const cols = 20;
     let level = 0;
 
-    const levelHints = [
-      "A gentle start. Learn the path and spot the yellow exit. Adventure begins!",
-      "Things get deeper. Hidden resets and paths await—don't get sent back!",
-      "Invisible traps and tricky turns await. Watch your steps—and your memory!"
-    ];
+    const levels = [/* Your 3 maze levels here */]; // Keep this unchanged
 
-    const levels = [
-    [
-      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-      [1,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,2,1],
-      [1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,4,1,5,1],
-      [1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
-      [1,0,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
-      [1,0,0,0,1,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1],
-      [1,1,1,1,1,0,1,0,0,1,0,1,0,1,0,1,0,1,0,1],
-      [1,0,0,0,0,0,1,0,1,1,0,1,0,1,0,1,0,1,0,1],
-      [1,0,1,1,1,1,1,0,1,0,0,1,0,1,0,0,0,0,0,1],
-      [1,0,1,3,1,0,0,0,1,0,1,1,0,1,1,0,1,0,0,1],
-      [1,0,1,0,1,0,1,1,1,0,0,0,0,0,1,0,1,0,0,1],
-      [1,0,1,0,1,0,1,0,0,0,1,0,1,1,1,0,1,0,0,1],
-      [1,0,1,0,1,0,1,0,1,1,1,1,0,0,1,0,0,1,0,1],
-      [1,0,1,0,1,0,1,0,1,0,0,0,1,0,1,1,0,1,0,1],
-      [1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,0,1,0,1],
-      [1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,0,1,1,0,1],
-      [1,0,1,0,0,0,1,0,1,0,0,0,0,0,1,0,0,1,0,1],
-      [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1],
-      [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,2,1],
-      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-    ],
-  [ 
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,2,1,0,1],
-    [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,2,1,0,1],
-    [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,2,1,0,1],
-    [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-    [1,0,1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,2,1,0,1],
-    [1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4,1],
-    [1,5,1,2,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]
-  ],
-    [
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
-    [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
-    [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
-    [1,0,4,0,0,0,0,0,4,0,0,0,0,0,0,5,2,1,0,1],
-    [1,0,1,1,1,0,1,1,1,5,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,0,1,0,1],
-    [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,1,0,1],
-    [1,0,1,1,1,1,1,1,1,5,1,1,1,1,1,1,0,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]
-]
-];
-
-    const levelHintDiv = document.getElementById('levelHint');
-    const player = { x: 1, y: 1 };
     let maze = JSON.parse(JSON.stringify(levels[level]));
-
-    function updateHint() {
-      levelHintDiv.textContent = levelHints[level] || "New challenges await!";
-    }
+    const player = { x: 1, y: 1 };
 
     function drawMaze() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const tile = maze[y][x];
-          if (tile === 4 || tile === 5) continue; // hide trap and reset visually
+          if (tile === 4 || tile === 5) continue;
           switch (tile) {
             case 1: ctx.fillStyle = '#d81b60'; break;
             case 2: ctx.fillStyle = '#ffd54f'; break;
@@ -209,6 +115,15 @@
       return null;
     }
 
+    function updateLevelHint() {
+      const hints = [
+        "A gentle start. Learn the path and spot the yellow exit. Adventure begins!",
+        "Things get deeper. Hidden resets and paths await—don't get sent back!",
+        "Invisible traps and tricky turns await. Watch your steps—and your memory!"
+      ];
+      document.getElementById("levelHint").textContent = hints[level] || "";
+    }
+
     function movePlayer(dx, dy) {
       const newX = player.x + dx;
       const newY = player.y + dy;
@@ -220,7 +135,11 @@
         if (maze[newY][newX] === 4) {
           const px = newX + dx;
           const py = newY + dy;
-          if (px >= 0 && py >= 0 && px < cols && py < rows && maze[py][px] === 0) {
+          if (
+            px >= 0 && py >= 0 &&
+            px < cols && py < rows &&
+            maze[py][px] === 0
+          ) {
             maze[py][px] = 1;
           }
         }
@@ -242,22 +161,18 @@
         drawMaze();
 
         if (maze[player.y][player.x] === 2) {
-          if (level === 2) { // reward at level 3
+          if (level === levels.length - 1) {
             document.getElementById('winMessage').style.display = 'block';
             document.getElementById('slideshow').style.display = 'flex';
+          } else {
+            level++;
+            maze = JSON.parse(JSON.stringify(levels[level]));
+            player.x = 1;
+            player.y = 1;
+            updateLevelHint();
+            drawMaze();
           }
         }
-      }
-    }
-
-    function nextLevel() {
-      if (level < levels.length - 1) {
-        level++;
-        maze = JSON.parse(JSON.stringify(levels[level]));
-        player.x = 1;
-        player.y = 1;
-        updateHint();
-        drawMaze();
       }
     }
 
@@ -270,7 +185,6 @@
       }
     });
 
-    // Swipe controls
     let touchStartX = 0;
     let touchStartY = 0;
     canvas.addEventListener('touchstart', (e) => {
@@ -278,6 +192,7 @@
       touchStartX = touch.clientX;
       touchStartY = touch.clientY;
     });
+
     canvas.addEventListener('touchend', (e) => {
       const dx = e.changedTouches[0].clientX - touchStartX;
       const dy = e.changedTouches[0].clientY - touchStartY;
@@ -288,7 +203,7 @@
       }
     });
 
-    updateHint();
+    updateLevelHint();
     drawMaze();
   </script>
 </body>
