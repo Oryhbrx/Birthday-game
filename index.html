@@ -38,7 +38,7 @@
       top: 0; left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(255, 240, 245, 0.95);
+      background: #fff;
       display: none;
       flex-direction: column;
       justify-content: center;
@@ -46,10 +46,11 @@
       z-index: 9999;
     }
     #rewardPopup img {
-      width: 90%;
-      max-width: 500px;
-      border: 5px solid #f06292;
-      border-radius: 12px;
+      max-width: 95vw;
+      max-height: 80vh;
+      border: 12px solid #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.15);
     }
     .navArrows {
       display: flex;
@@ -101,19 +102,18 @@
     const rows = 20, cols = 20;
     let level = 0;
 
+    const rewardPopup = document.getElementById('rewardPopup');
+    const rewardImage = document.getElementById('rewardImage');
+    const rewardImages = ['photo2.png', 'photo3.png', 'photo4.png', 'photo5.png'];
+    let currentRewardIndex = 0;
+
     const hints = [
       "A gentle start. Learn the path and spot the yellow exit. Adventure begins!",
       "Things get deeper. Hidden resets and paths await—don't get sent back!",
       "Invisible traps and tricky turns await. Watch your steps—and your memory!"
     ];
 
-    const rewardImages = ['photo2.png', 'photo3.png', 'photo4.png', 'photo5.png'];
-    let currentRewardIndex = 0;
-
     const player = { x: 1, y: 1 };
-
-    const rewardPopup = document.getElementById("rewardPopup");
-    const rewardImage = document.getElementById("rewardImage");
 
        const levels = [
     [
@@ -228,11 +228,15 @@
             maze[py][px] = 1;
           }
         }
-        player.x = newX; player.y = newY;
+        player.x = newX;
+        player.y = newY;
 
         if (maze[newY][newX] === 3) {
           const tp = findAnotherTeleportSpot(newX, newY);
-          if (tp) { player.x = tp.x; player.y = tp.y; }
+          if (tp) {
+            player.x = tp.x;
+            player.y = tp.y;
+          }
         } else if (maze[newY][newX] === 5) {
           player.x = 1; player.y = 1;
         }
@@ -241,6 +245,7 @@
 
         if (maze[player.y][player.x] === 2) {
           if (level === levels.length - 1) {
+            document.getElementById('winMessage').style.display = 'block';
             showRewardPopup();
           } else {
             level++;
@@ -254,7 +259,6 @@
     }
 
     function showRewardPopup() {
-      document.getElementById('winMessage').style.display = 'block';
       rewardPopup.style.display = 'flex';
       rewardImage.src = rewardImages[currentRewardIndex];
     }
@@ -268,6 +272,11 @@
       currentRewardIndex = (currentRewardIndex - 1 + rewardImages.length) % rewardImages.length;
       rewardImage.src = rewardImages[currentRewardIndex];
     }
+
+    // Tap/click to hide reward popup
+    rewardPopup.addEventListener('click', () => {
+      rewardPopup.style.display = 'none';
+    });
 
     document.addEventListener('keydown', (e) => {
       switch (e.key) {
