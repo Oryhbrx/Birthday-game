@@ -103,7 +103,6 @@
 
   <img id="princess" src="princess.png" style="display:none;" />
   <script>
-  //<![CDATA[
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const princess = document.getElementById('princess');
@@ -122,7 +121,7 @@
 
     const player = { x: 1, y: 1 };
 
-       const levels = [
+           const levels = [
     [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,2,1],
@@ -180,16 +179,17 @@
     [1,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,0,0,0,1],
     [1,0,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,0,1],
     [1,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,1,0,1],
-    [1,0,1,1,1,1,1,1,1,0,1,1,71,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,0,0,0,1],
+    [1,0,1,1,1,1,1,1,1,0,1,1,7,1,1,1,1,1,0,1],
+    [1,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,0,1,0,1],
     [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
     [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
     [1,0,1,1,1,1,1,1,1,5,1,1,1,1,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,61,0,0,1],
+    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,6,0,0,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]
 ]
   ]; 
+
     let maze = JSON.parse(JSON.stringify(levels[level]));
 
     function updateLevelHint() {
@@ -202,12 +202,7 @@
         for (let x = 0; x < cols; x++) {
           const tile = maze[y][x];
           if (tile === 4 || tile === 5 || tile === 6) continue;
-          switch (tile) {
-            case 1: ctx.fillStyle = '#d81b60'; break;
-            case 2: ctx.fillStyle = '#ffd54f'; break;
-            case 3: ctx.fillStyle = '#f8bbd0'; break;
-            default: ctx.fillStyle = '#ffffff'; break;
-          }
+          ctx.fillStyle = ['#ffffff', '#d81b60', '#ffd54f', '#f8bbd0'][tile] || '#ffffff';
           ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
       }
@@ -215,15 +210,11 @@
     }
 
     function findPairTile(num) {
-      let pairNum = null;
-      if (num >= 60 && num < 70) pairNum = num + 10;
-      else if (num >= 70 && num < 80) pairNum = num - 10;
-      else return null;
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          if (maze[r][c] === pairNum) {
-            return { x: c, y: r };
-          }
+      let pairNum = num === 6 ? 7 : num === 7 ? 6 : null;
+      if (pairNum === null) return null;
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          if (maze[y][x] === pairNum) return { x, y };
         }
       }
       return null;
@@ -233,10 +224,14 @@
       const newX = player.x + dx;
       const newY = player.y + dy;
       if (newX >= 0 && newY >= 0 && newX < cols && newY < rows && maze[newY][newX] !== 1) {
-        if (maze[newY][newX] === 4) {
-          const px = newX + dx, py = newY + dy;
-          if (px >= 0 && py >= 0 && px < cols && py < rows && maze[py][px] === 0) {
-            maze[py][px] = 1;
+        if (maze[newY][newX] === 6) {
+          const directions = [[0,1],[1,0],[0,-1],[-1,0]];
+          for (let [dx2, dy2] of directions) {
+            const tx = newX + dx2, ty = newY + dy2;
+            if (maze[ty]?.[tx] === 1) {
+              maze[ty][tx] = 0;
+              break;
+            }
           }
         }
 
@@ -244,18 +239,10 @@
         player.y = newY;
 
         if (maze[newY][newX] === 3) {
-          const tp = findAnotherTeleportSpot(newX, newY);
-          if (tp) { player.x = tp.x; player.y = tp.y; }
-        } else if (maze[newY][newX] === 5) {
-          player.x = 1; player.y = 1;
-        } 
-        // Handle all 6x and 7x pairs
-        else if (maze[newY][newX] >= 60 && maze[newY][newX] < 70) {
-          const pair = findPairTile(maze[newY][newX]);
-          if (pair) maze[pair.y][pair.x] = 0;
-        } else if (maze[newY][newX] >= 70 && maze[newY][newX] < 80) {
-          const pair = findPairTile(maze[newY][newX]);
-          if (pair) maze[pair.y][pair.x] = 0;
+          const spot = findPairTile(3);
+          if (spot) { player.x = spot.x; player.y = spot.y; }
+        } else if (maze[newY][newX] === 4 || maze[newY][newX] === 5) {
+          // Hidden tiles: do nothing special
         }
 
         drawMaze();
@@ -295,12 +282,10 @@
     }
 
     document.addEventListener('keydown', (e) => {
-      switch (e.key) {
-        case 'ArrowUp': movePlayer(0, -1); break;
-        case 'ArrowDown': movePlayer(0, 1); break;
-        case 'ArrowLeft': movePlayer(-1, 0); break;
-        case 'ArrowRight': movePlayer(1, 0); break;
-      }
+      if (e.key === 'ArrowUp') movePlayer(0, -1);
+      if (e.key === 'ArrowDown') movePlayer(0, 1);
+      if (e.key === 'ArrowLeft') movePlayer(-1, 0);
+      if (e.key === 'ArrowRight') movePlayer(1, 0);
     });
 
     let touchStartX = 0, touchStartY = 0;
@@ -321,7 +306,6 @@
 
     updateLevelHint();
     drawMaze();
-  //]]>
   </script>
 </body>
 </html>
