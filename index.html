@@ -22,6 +22,13 @@
       margin: 10px 0;
       text-align: center;
     }
+    #levelHint {
+      font-size: 1.1rem;
+      margin: 5px;
+      color: #880e4f;
+      font-weight: bold;
+      text-align: center;
+    }
     canvas {
       border: 3px solid #d81b60;
       background: #ffffff;
@@ -29,20 +36,7 @@
       touch-action: none;
     }
     .controls {
-      display: flex;
-      justify-content: center;
-      margin-top: 10px;
-    }
-    .controls button {
-      margin: 5px;
-      padding: 20px 28px;
-      font-size: 20px;
-      background-color: #d81b60;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-weight: bold;
-      cursor: pointer;
+      display: none; /* hidden for mobile */
     }
     .slideshow {
       display: none;
@@ -73,28 +67,12 @@
       font-weight: bold;
       cursor: pointer;
     }
-    @media only screen and (max-width: 768px) {
-      .controls {
-        display: none;
-      }
-    }
   </style>
 </head>
 <body>
   <h1>🎉 Help Princess Regine Escape the Maze! 🎮</h1>
+  <div id="levelHint"></div>
   <canvas id="gameCanvas" width="640" height="640"></canvas>
-
-  <!-- Controls (desktop only) -->
-  <div class="controls">
-    <button onclick="movePlayer(0, -1)">⬆️</button>
-  </div>
-  <div class="controls">
-    <button onclick="movePlayer(-1, 0)">⬅️</button>
-    <button onclick="movePlayer(1, 0)">➡️</button>
-  </div>
-  <div class="controls">
-    <button onclick="movePlayer(0, 1)">⬇️</button>
-  </div>
 
   <!-- Win Message and Slideshow -->
   <div id="winMessage">🎊 You escaped the maze! Happy Birthday, Regine! 🎂</div>
@@ -117,6 +95,12 @@
     const rows = 20;
     const cols = 20;
     let level = 0;
+
+    const levelHints = [
+      "A gentle start. Learn the path and spot the yellow exit. Adventure begins!",
+      "Things get deeper. Hidden resets and paths await—don't get sent back!",
+      "Invisible traps and tricky turns await. Watch your steps—and your memory!"
+    ];
 
     const levels = [
     [
@@ -173,13 +157,13 @@
     [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
     [1,0,4,0,0,0,0,0,4,0,0,0,0,0,0,5,2,1,0,1],
     [1,0,1,1,1,0,1,1,1,5,1,1,1,1,1,1,1,1,0,1],
-    [1,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,0,0,0,1],
     [1,0,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,0,1],
     [1,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,0,1,0,1],
     [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
     [1,0,0,0,0,0,0,0,5,0,5,0,0,0,0,0,0,0,0,1],
     [1,0,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1],
-    [1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+    [1,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0,1,0,1],
     [1,0,1,1,1,1,1,1,1,5,1,1,1,1,1,1,0,1,0,1],
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
@@ -187,8 +171,13 @@
 ]
 ];
 
-    let maze = JSON.parse(JSON.stringify(levels[level]));
+    const levelHintDiv = document.getElementById('levelHint');
     const player = { x: 1, y: 1 };
+    let maze = JSON.parse(JSON.stringify(levels[level]));
+
+    function updateHint() {
+      levelHintDiv.textContent = levelHints[level] || "New challenges await!";
+    }
 
     function drawMaze() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -196,21 +185,16 @@
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const tile = maze[y][x];
-
-          if (tile === 4 || tile === 5) continue; // fully hidden tiles
-
+          if (tile === 4 || tile === 5) continue; // hide trap and reset visually
           switch (tile) {
             case 1: ctx.fillStyle = '#d81b60'; break;
             case 2: ctx.fillStyle = '#ffd54f'; break;
             case 3: ctx.fillStyle = '#f8bbd0'; break;
             default: ctx.fillStyle = '#ffffff'; break;
           }
-
           ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
       }
-
-      // Draw Princess sprite
       ctx.drawImage(princess, player.x * tileSize, player.y * tileSize, tileSize, tileSize);
     }
 
@@ -236,11 +220,7 @@
         if (maze[newY][newX] === 4) {
           const px = newX + dx;
           const py = newY + dy;
-          if (
-            px >= 0 && py >= 0 &&
-            px < cols && py < rows &&
-            maze[py][px] === 0
-          ) {
+          if (px >= 0 && py >= 0 && px < cols && py < rows && maze[py][px] === 0) {
             maze[py][px] = 1;
           }
         }
@@ -262,8 +242,10 @@
         drawMaze();
 
         if (maze[player.y][player.x] === 2) {
-          document.getElementById('winMessage').style.display = 'block';
-          document.getElementById('slideshow').style.display = 'flex';
+          if (level === 2) { // reward at level 3
+            document.getElementById('winMessage').style.display = 'block';
+            document.getElementById('slideshow').style.display = 'flex';
+          }
         }
       }
     }
@@ -274,6 +256,7 @@
         maze = JSON.parse(JSON.stringify(levels[level]));
         player.x = 1;
         player.y = 1;
+        updateHint();
         drawMaze();
       }
     }
@@ -287,7 +270,7 @@
       }
     });
 
-    // Swipe touch support
+    // Swipe controls
     let touchStartX = 0;
     let touchStartY = 0;
     canvas.addEventListener('touchstart', (e) => {
@@ -295,7 +278,6 @@
       touchStartX = touch.clientX;
       touchStartY = touch.clientY;
     });
-
     canvas.addEventListener('touchend', (e) => {
       const dx = e.changedTouches[0].clientX - touchStartX;
       const dy = e.changedTouches[0].clientY - touchStartY;
@@ -306,6 +288,7 @@
       }
     });
 
+    updateHint();
     drawMaze();
   </script>
 </body>
