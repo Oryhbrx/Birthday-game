@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Princess Regine's Birthday Maze 🎂</title>
   <style>
     body {
@@ -17,20 +17,16 @@
       -webkit-user-select: none;
       user-select: none;
     }
-    h1 {
-      color: #d81b60;
-      text-align: center;
-      margin: 10px;
-    }
+    h1 { color: #d81b60; margin: 10px; text-align: center; }
     #levelHint {
-      color: #c2185b;
       font-size: 1.1rem;
+      color: #c2185b;
       text-align: center;
       margin-bottom: 10px;
     }
     canvas {
       border: 3px solid #d81b60;
-      background: #ffffff;
+      background: #fff;
       touch-action: none;
     }
     #rewardPopup {
@@ -59,23 +55,13 @@
       max-width: 500px;
       margin-top: 15px;
     }
-    .navArrows button {
+    .navArrows button, #closeBtn {
       font-size: 1.5rem;
       background: #d81b60;
       color: white;
       border: none;
       padding: 10px 20px;
       border-radius: 8px;
-      cursor: pointer;
-    }
-    #closeBtn {
-      margin-top: 10px;
-      background: #888;
-      color: white;
-      font-size: 1.1rem;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
       cursor: pointer;
     }
     #winMessage {
@@ -103,9 +89,9 @@
 
   <img id="princess" src="princess.png" style="display:none;" />
   <script>
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const princess = document.getElementById('princess');
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const princess = document.getElementById("princess");
     const tileSize = 32;
     const rows = 20, cols = 20;
     let level = 0;
@@ -116,12 +102,12 @@
       "Invisible traps and tricky turns await. Watch your steps—and your memory!"
     ];
 
-    const rewardImages = ['photo2.png', 'photo3.png', 'photo4.png', 'photo5.png'];
+    const rewardImages = ["photo2.png", "photo3.png", "photo4.png"];
     let currentRewardIndex = 0;
 
     const player = { x: 1, y: 1 };
 
-           const levels = [
+        const levels = [
     [
       [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
       [1,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,2,1],
@@ -189,7 +175,6 @@
     [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1]
 ]
   ]; 
-
     let maze = JSON.parse(JSON.stringify(levels[level]));
 
     function updateLevelHint() {
@@ -201,8 +186,13 @@
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const tile = maze[y][x];
-          if (tile === 4 || tile === 5 || tile === 6) continue;
-          ctx.fillStyle = ['#ffffff', '#d81b60', '#ffd54f', '#f8bbd0'][tile] || '#ffffff';
+          if ([4, 5, 6].includes(tile)) continue;
+          ctx.fillStyle = (
+            tile === 1 ? '#d81b60' :
+            tile === 2 ? '#ffd54f' :
+            tile === 3 ? '#f8bbd0' :
+            '#ffffff'
+          );
           ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
       }
@@ -210,98 +200,92 @@
     }
 
     function findPairTile(num) {
-      let pairNum = num === 6 ? 7 : num === 7 ? 6 : null;
-      if (pairNum === null) return null;
+      const target = num === 6 ? 7 : 6;
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-          if (maze[y][x] === pairNum) return { x, y };
+          if (maze[y][x] === target) return { x, y };
+        }
+      }
+      return null;
+    }
+
+    function findOtherTeleport(x, y) {
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          if (maze[r][c] === 3 && (c !== x || r !== y)) return { x: c, y: r };
         }
       }
       return null;
     }
 
     function movePlayer(dx, dy) {
-      const newX = player.x + dx;
-      const newY = player.y + dy;
-      if (newX >= 0 && newY >= 0 && newX < cols && newY < rows && maze[newY][newX] !== 1) {
-        if (maze[newY][newX] === 6) {
-          const directions = [[0,1],[1,0],[0,-1],[-1,0]];
-          for (let [dx2, dy2] of directions) {
-            const tx = newX + dx2, ty = newY + dy2;
-            if (maze[ty]?.[tx] === 1) {
-              maze[ty][tx] = 0;
-              break;
-            }
-          }
-        }
+      const nx = player.x + dx, ny = player.y + dy;
+      if (nx < 0 || ny < 0 || nx >= cols || ny >= rows) return;
+      const tile = maze[ny][nx];
+      if (tile === 1) return;
 
-        player.x = newX;
-        player.y = newY;
+      if (tile === 4) {
+        // Invisible path trigger (could be expanded)
+      } else if (tile === 5) {
+        player.x = 1; player.y = 1;
+        drawMaze(); return;
+      } else if (tile === 3) {
+        const tp = findOtherTeleport(nx, ny);
+        if (tp) { player.x = tp.x; player.y = tp.y; drawMaze(); return; }
+      } else if (tile === 6) {
+        const pair = findPairTile(6);
+        if (pair) maze[pair.y][pair.x] = 0;
+      }
 
-        if (maze[newY][newX] === 3) {
-          const spot = findPairTile(3);
-          if (spot) { player.x = spot.x; player.y = spot.y; }
-        } else if (maze[newY][newX] === 4 || maze[newY][newX] === 5) {
-          // Hidden tiles: do nothing special
-        }
+      player.x = nx;
+      player.y = ny;
+      drawMaze();
 
-        drawMaze();
-
-        if (maze[player.y][player.x] === 2) {
-          if (level === levels.length - 1) {
-            showRewardPopup();
-          } else {
-            level++;
-            maze = JSON.parse(JSON.stringify(levels[level]));
-            player.x = 1; player.y = 1;
-            updateLevelHint();
-            drawMaze();
-          }
+      if (tile === 2) {
+        if (level === levels.length - 1) {
+          document.getElementById("winMessage").style.display = "block";
+          document.getElementById("rewardPopup").style.display = "flex";
+        } else {
+          level++;
+          maze = JSON.parse(JSON.stringify(levels[level]));
+          player.x = 1; player.y = 1;
+          updateLevelHint();
+          drawMaze();
         }
       }
-    }
-
-    function showRewardPopup() {
-      document.getElementById('winMessage').style.display = 'block';
-      document.getElementById('rewardPopup').style.display = 'flex';
-      document.getElementById('rewardImage').src = rewardImages[currentRewardIndex];
-    }
-
-    function closeRewardPopup() {
-      document.getElementById('rewardPopup').style.display = 'none';
     }
 
     function nextImage() {
       currentRewardIndex = (currentRewardIndex + 1) % rewardImages.length;
-      document.getElementById('rewardImage').src = rewardImages[currentRewardIndex];
+      document.getElementById("rewardImage").src = rewardImages[currentRewardIndex];
     }
 
     function prevImage() {
       currentRewardIndex = (currentRewardIndex - 1 + rewardImages.length) % rewardImages.length;
-      document.getElementById('rewardImage').src = rewardImages[currentRewardIndex];
+      document.getElementById("rewardImage").src = rewardImages[currentRewardIndex];
     }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowUp') movePlayer(0, -1);
-      if (e.key === 'ArrowDown') movePlayer(0, 1);
-      if (e.key === 'ArrowLeft') movePlayer(-1, 0);
-      if (e.key === 'ArrowRight') movePlayer(1, 0);
+    function closeRewardPopup() {
+      document.getElementById("rewardPopup").style.display = "none";
+    }
+
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowUp") movePlayer(0, -1);
+      else if (e.key === "ArrowDown") movePlayer(0, 1);
+      else if (e.key === "ArrowLeft") movePlayer(-1, 0);
+      else if (e.key === "ArrowRight") movePlayer(1, 0);
     });
 
-    let touchStartX = 0, touchStartY = 0;
-    canvas.addEventListener('touchstart', e => {
-      const touch = e.touches[0];
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
+    let startX = 0, startY = 0;
+    canvas.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
     });
-    canvas.addEventListener('touchend', e => {
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      const dy = e.changedTouches[0].clientY - touchStartY;
-      if (Math.abs(dx) > Math.abs(dy)) {
-        movePlayer(dx > 0 ? 1 : -1, 0);
-      } else {
-        movePlayer(0, dy > 0 ? 1 : -1);
-      }
+    canvas.addEventListener("touchend", e => {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = e.changedTouches[0].clientY - startY;
+      if (Math.abs(dx) > Math.abs(dy)) movePlayer(dx > 0 ? 1 : -1, 0);
+      else movePlayer(0, dy > 0 ? 1 : -1);
     });
 
     updateLevelHint();
